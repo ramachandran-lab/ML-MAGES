@@ -162,7 +162,7 @@ def main():
     genes = pd.read_csv(gene_file)
     df_bivar_gene = ml_mages.summarize_bivariate_gene(genes,betas,cls_lbs,pred_K)
     # save
-    df_bivar_gene.to_csv(os.path.join(output_path,"bivar_gene_{}.csv".format(traits[i_trait])), index=False)
+    df_bivar_gene.to_csv(os.path.join(output_path,"bivar_gene_{}.csv".format("-".join(traits))), index=False)
     end_time = time.time()
     print("Bivariate gene analysis takes {:.2f} seconds".format(end_time - start_time))
 
