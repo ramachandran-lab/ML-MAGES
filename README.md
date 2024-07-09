@@ -12,6 +12,8 @@ The `code` folder in this repository contains the following files:
 - `run_sample.py`: This file contains the code to apply the method on sample data.
 - `ml_mages.py`: This file includes implemented functions for each step of the method.
 - `_cls_funcs_.py`: This file contains utility functions for the clustering algorithm.
+- `run_ensemble.sh`: This file contains the bash script with the command to run the Python code file for the full genotyped data (not included) using ensembled models, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
+- `run_ensemble.py`: This file contains the code to apply the method on the full genotyped data (not included).
 
 ## Data Folder
 The `sample_data` folder in this repository contains the following files:
