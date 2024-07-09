@@ -3,3 +3,4 @@ pytorch.venv/
 data/
 output/
 code/test.ipynb
+**/*.ipynb_checkpoints/
