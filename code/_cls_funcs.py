@@ -220,7 +220,7 @@ def infmix_clustering(data, K = 30, alpha = 0.5, niter = 1000, eps = 1e-4, n_run
         K_chosen = np.min([k for k in all_pred_K if k>1])
     else:
         k_candidate = [k for k in all_pred_K if pred_K_cnt[k]==major_K_cnt]
-        K_chosen = np.min(k_candidate)
+        K_chosen = np.max(k_candidate)
     idx_of_K = np.where(K_results==K_chosen)[0]
     min_BIC_idx = np.argsort(BIC_results[idx_of_K])[0]
     best_results = result_runs[idx_of_K[min_BIC_idx]]

@@ -12,6 +12,27 @@ from matplotlib.patches import Ellipse
 from _cls_funcs import infmix_clustering
 
 
+def load_gwa(gwa_files, cols=['BETA','SE']):
+    """
+    Load genetic association results from multiple files.
+
+    Parameters:
+    gwa_files (list): A list of file paths to the genetic association result files.
+    cols (list, optional): A list of column names to extract from the genetic association result files. Defaults to ['BETA','SE'].
+
+    Returns:
+    list: A list of dict (of numpy.ndarray) containing all columns extracted for each trait.
+    """
+    gwa_loaded = list()
+    for gwa_file in gwa_files:
+        df_gwa = pd.read_csv(gwa_file)
+        res = dict()
+        for col in cols:
+            res[col] = df_gwa[col].values
+        gwa_loaded.append(res)
+    return gwa_loaded
+
+
 def load_gwa_results(gwa_files, beta_col='BETA', se_col='SE'):
     """
     Load genetic association results from multiple files.
@@ -33,7 +54,7 @@ def load_gwa_results(gwa_files, beta_col='BETA', se_col='SE'):
     return beta, se
 
 
-def load_ld_blocks(ld_files):
+def load_ld_blocks(ld_files, sep=" "):
     """
     Load LD blocks from a list of LD files.
 
@@ -45,7 +66,7 @@ def load_ld_blocks(ld_files):
     """
     ld_list = list()
     for ld_file in ld_files:
-        ld = np.loadtxt(ld_file)
+        ld = np.loadtxt(ld_file, delimiter=sep)
         ld_list.append(ld)
     return ld_list
 
@@ -70,6 +91,19 @@ def load_model(model_path,n_layer,top_r):
     state = torch.load(model_file)
     model.load_state_dict(state)
     return model
+
+def load_models(model_path,n_layer,top_r,n_models):
+    n_features = get_n_features(top_r)
+    feature_lb = "top{}".format(top_r)  
+    models = list()      
+    for i_model in range(n_models):
+        model = Fc3(n_features,feature_lb) if n_layer==3 else Fc2(n_features,feature_lb)
+        model_file = os.path.join(model_path,"{}_{}.model".format(model.name,i_model))
+        state = torch.load(model_file)
+        model.load_state_dict(state)
+        model.eval()
+        models.append(model)
+    return models
 
 
 def construct_features(bhat, shat, ld, top_r):
@@ -117,7 +151,7 @@ def threshold_vals(x, zero_cutoff=1e-3):
     return y
 
 
-def get_nz_effects(beta_reg, zero_cutoff=1e-3, adjust_max = 10):
+def get_nz_effects(beta_reg, fold_min=200, fold_max=10, zero_cutoff=1e-3, adjust_max = 10, adjust_rate = 1.5):
     """
     Get the non-zero effects from a given beta regression.
 
@@ -139,11 +173,11 @@ def get_nz_effects(beta_reg, zero_cutoff=1e-3, adjust_max = 10):
     beta_nz = beta_reg_f[np.any(np.abs(beta_reg_f)>0, axis=1),:] # any nz
 
     adjust_iter = 0
-    while (beta_nz.shape[0]<beta_reg.shape[0]//200 or beta_nz.shape[0]>beta_reg.shape[0]//10) and adjust_iter<adjust_max:
-        if beta_nz.shape[0]<beta_reg.shape[0]//200:
-            zero_cutoff /= 2
+    while (beta_nz.shape[0]<beta_reg.shape[0]//fold_min or beta_nz.shape[0]>beta_reg.shape[0]//fold_max) and adjust_iter<adjust_max:
+        if beta_nz.shape[0]<beta_reg.shape[0]//fold_min:
+            zero_cutoff /= adjust_rate
         else:
-            zero_cutoff *= 2
+            zero_cutoff *= adjust_rate
         beta_reg_f = threshold_vals(beta_reg, zero_cutoff=zero_cutoff)
         beta_nz = beta_reg_f[np.any(np.abs(beta_reg_f)>0, axis=1),:] # any nz
         adjust_iter += 1 
@@ -259,7 +293,7 @@ def summarize_bivariate_gene(genes, betas, cls_lbs, pred_K):
     df_gene = pd.DataFrame(genes)
     df_gene['size'] = genes['N_SNPS']
     for cls in range(pred_K):
-        df_gene['cls{}_frac'.format(cls)] = genes_cls_cnt[:,cls]/df_gene['size']
+        df_gene['cls{}_frac'.format(cls+1)] = genes_cls_cnt[:,cls]/df_gene['size']
     prod_types = ['b1b1','b2b2','b1b2']
     df_gene[prod_types] = genes_beta_prod_all_cls
 
@@ -374,6 +408,114 @@ def plot_clustering(beta_nz, pred_cls, pred_K, Sigma, pi, traits, save_file):
     fig.savefig(save_file, bbox_inches='tight', dpi=200)
 
     return
+
+
+def plot_shrinkage(beta_obs, beta_reg, beta_chrs, save_file):
+    """
+    Plot the shrinkage results.
+
+    Parameters:
+    - beta_obs (numpy.ndarray): The observed (un-regularized) effect labels.
+    - beta_reg (numpy.ndarray): The regularized effect values.
+    - beta_chrs (numpy.ndarray): The CHR of each variant.
+    - save_file (str): The path to save the plot.
+
+    Returns:
+    None
+    """
+    # create dataframe
+    df_results = pd.DataFrame(np.vstack([beta_obs, beta_reg, beta_chrs]).T,columns=["BETA_OBS","BETA_REG","CHR"])
+
+    # CHR switch point
+    chr_switch_idx = np.where(np.diff(beta_chrs)>0)[0]
+    chr_switch_idx = np.insert(chr_switch_idx,0,0)
+    chr_switch_idx = np.insert(chr_switch_idx,len(chr_switch_idx),len(beta_obs))
+    chr_in_data = np.sort(np.unique(beta_chrs))
+    lb_idx = list()
+    lb_name = list()
+    for ic, c in enumerate(chr_switch_idx[:(len(chr_switch_idx)-1)]):
+        mid_idx = (chr_switch_idx[ic]+chr_switch_idx[ic+1])//2
+        lb_idx.append(mid_idx)
+        lb_name.append(chr_in_data[ic])
+    df_results['is_odd'] = df_results['CHR']%2==1
+    df_results['idx'] = np.arange(len(df_results))
+    
+    fig, axes = plt.subplots(2,1, figsize=(8, 3), sharex=False, sharey=False, dpi=200)
+    # plot data
+    cols = ["BETA_OBS","BETA_REG"]
+    for i,col in enumerate(cols):
+        ax = axes[i]
+        sp = sns.scatterplot(data=df_results[df_results['is_odd']], 
+                             x='idx', y=col, s=4, 
+                             color='#999999',linewidth=0,
+                             ax=ax)
+        sp = sns.scatterplot(data=df_results[~df_results['is_odd']], 
+                             x='idx', y=col, s=4, 
+                             color='#404040',linewidth=0,
+                             ax=ax)
+        ax.set_xlim([0,len(df_results)])
+        for sw in chr_switch_idx:
+            ax.axvline(x=sw, color='lightgray', ls='--', lw=0.5)
+        if i==(len(cols)-1):
+            ax.set_xlabel("Chromosome")
+        else:
+            ax.set_xlabel("")
+        ax.set_xticks([])
+        ax.set_ylabel(col)
+    
+    fig.tight_layout()
+    fig.savefig(save_file, bbox_inches='tight', dpi=200)
+
+
+def plot_enrichment(df_enrich, save_file, level=0.05):
+    """
+    Plot the enrichment test results.
+
+    Parameters:
+    - df_enrich (pd.DataFrame): A dataframe containing the enrichment test results. Must contain columns 'CHR', 'GENE', and 'P'.
+    - save_file (str): The path to save the plot.
+
+    Returns:
+    None
+    """
+    # CHR switch point
+    chr_switch_idx = np.where(np.diff(df_enrich['CHR'])>0)[0]
+    chr_switch_idx = np.insert(chr_switch_idx,0,0)
+    chr_switch_idx = np.insert(chr_switch_idx,len(chr_switch_idx),len(df_enrich))
+    chr_in_data = np.sort(df_enrich['CHR'].unique())
+    lb_idx = list()
+    lb_name = list()
+    for ic, c in enumerate(chr_switch_idx[:(len(chr_switch_idx)-1)]):
+        mid_idx = (chr_switch_idx[ic]+chr_switch_idx[ic+1])//2
+        lb_idx.append(mid_idx)
+        lb_name.append(chr_in_data[ic])
+    df_enrich['is_odd'] = df_enrich['CHR']%2==1
+    df_enrich['idx'] = np.arange(len(df_enrich))
+    adjP = sp.stats.false_discovery_control(df_enrich["P"].values, method='bh')
+    df_enrich['neglogp'] = -np.log10(adjP)
+    
+    fig, ax = plt.subplots(1,1, figsize=(7, 2), dpi=200)
+    # plot data
+    sp = sns.scatterplot(data=df_enrich[df_enrich['is_odd']], 
+                         x='idx', y='neglogp', s=3, 
+                         color='#999999',linewidth=0,
+                         ax=ax)
+    sp = sns.scatterplot(data=df_enrich[~df_enrich['is_odd']], 
+                         x='idx', y='neglogp', s=3, 
+                         color='#404040',linewidth=0,
+                         ax=ax)
+    ax.axhline(-np.log10(level), color='blue', alpha=0.5, ls='--', lw=1)
+    ax.text(2,-np.log10(level)+0.5,r"$p={}$".format(level),
+            c='blue', alpha=0.5, ha="left",va="bottom") 
+    ax.set_xlim([0,len(df_enrich)])
+    # ax.set_ylim([-10,None])
+    for sw in chr_switch_idx:
+        ax.axvline(x=sw, color='lightgray', ls='--', lw=0.5)
+    ax.set_xlabel("Chromosome")
+    ax.set_xticks([])
+    ax.set_ylabel(r'adjusted $-log_{10}p$')
+    
+    fig.savefig(save_file, bbox_inches='tight', dpi=200)
 
 
 # 2-layer FFNN

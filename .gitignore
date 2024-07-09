@@ -1,2 +1,5 @@
 code/__pycache__/
 pytorch.venv/
+data/
+output/
+code/test.ipynb
