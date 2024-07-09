@@ -27,5 +27,9 @@ The `sample_data` folder in this repository contains the following files:
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
 ## Model Folder
-The `trained_model` folder in this repository contains the six trained models described in the paper. We do not provide the simulated training data, but training can be performed following steps described in appendix. 
+The `trained_model` folder in this repository contains trained models. 
+
+The subfolder `genotyped_simulated_training` contains the six models, each of a different architecture, trained using genotyped-data-based simulation described in the paper. We do not provide the simulated training data, but simulation and training can be performed following steps described in appendix. 
+
+The subfolder `imputed_simulated_training` contains two set of models, each with 10 models of a same architecture, trained using imputed-data-based simulation. The output of each set of models are averaged to generate an ensemble result of shrinkage, as used in the `run_ensemble.py`. Similarly, simulation and training can be performed following steps described in appendix. 
 
