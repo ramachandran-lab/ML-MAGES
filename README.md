@@ -4,6 +4,8 @@ This folder contains sample data and code for ML-MAGES: machine learning approac
 
 Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
+*The folders `data` and `output` for running the method on genotyped data are not included in the repository. Data is available upon request.*
+
 ## Code Folder
 
 The `code` folder in this repository contains the following files:
