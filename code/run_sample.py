@@ -160,7 +160,7 @@ def main():
     pred_K = len(Sigma)
     Sigma = [s.reshape(2,2) for s in Sigma]
     genes = pd.read_csv(gene_file)
-    df_bivar_gene = ml_mages.summarize_bivariate_gene(genes,betas,cls_lbs,pred_K)
+    df_bivar_gene = ml_mages.summarize_multivariate_gene(genes,betas,cls_lbs,pred_K)
     # save
     df_bivar_gene.to_csv(os.path.join(output_path,"bivar_gene_{}.csv".format("-".join(traits))), index=False)
     end_time = time.time()

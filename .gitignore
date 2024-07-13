@@ -1,6 +1,11 @@
-code/__pycache__/
-pytorch.venv/
 data/
 output/
-code/test.ipynb
+code/__pycache__/
 **/*.ipynb_checkpoints/
+pytorch.venv/
+code/test.ipynb
+code/test*.ipynb
+code/remote_cluster.sh
+trained_models/*
+!trained_models/genotyped_simulated_training
+!trained_models/imputed_simulated_training

@@ -32,6 +32,7 @@ def main():
     print("output_path:", output_path)
     scale = 250
     n_models = 10
+    n_traits = len(traits)
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -105,7 +106,7 @@ def main():
     end_time = time.time()
     print("Shrinkage and univariate clustering take {:.2f} seconds".format(end_time - start_time))
 
-    # bivariate clustering
+    # multivariate clustering
     start_time = time.time()
     beta_reg_multi = list()
     for i_trait, trait in enumerate(traits):
@@ -115,7 +116,7 @@ def main():
         beta_reg_multi.append(beta_reg)
     beta_reg_multi = np.vstack(beta_reg_multi).T
     beta_nz_multi, zero_cutoff = ml_mages.get_nz_effects(beta_reg_multi, fold_min=500, fold_max=5, zero_cutoff=1e-4, adjust_max = 20, adjust_rate = 1.5)
-    Sigma, pi, pred_K, pred_cls = ml_mages.clustering(beta_nz_multi, K=30, n_runs=15)
+    Sigma, pi, pred_K, pred_cls = ml_mages.clustering(beta_nz_multi, K=30, n_runs=25)
     cls_labels = np.ones(beta_reg_multi.shape[0])*(-1)
     is_nz = np.any(np.abs(beta_reg_multi)>zero_cutoff, axis=1) 
     cls_labels[is_nz] = pred_cls
@@ -125,11 +126,12 @@ def main():
     np.savetxt(os.path.join(output_path,"multivar_{}_pi.txt".format(output_lb)), pi.squeeze(), delimiter=',') 
     np.savetxt(os.path.join(output_path,"multivar_{}_cls.txt".format(output_lb)), cls_labels, delimiter=',')
     np.savetxt(os.path.join(output_path,"multivar_{}_zc.txt".format(output_lb)), np.array([zero_cutoff]), delimiter=',')
-    # plot
-    fig_file = os.path.join(output_path,"clustering_multivar_{}.png".format(output_lb))
-    ml_mages.plot_clustering(beta_nz_multi, pred_cls, pred_K, Sigma, pi, traits, fig_file)
-    # plot with null "zero" effects
-    # beta_zero_multi = beta_reg_multi[~is_nz,:]
+    if n_traits==2:
+        # plot
+        fig_file = os.path.join(output_path,"clustering_multivar_{}.png".format(output_lb))
+        ml_mages.plot_clustering(beta_nz_multi, pred_cls, pred_K, Sigma, pi, traits, fig_file)
+        # plot with null "zero" effects
+        # beta_zero_multi = beta_reg_multi[~is_nz,:]
 
     end_time = time.time()
     print("Bivariate clustering takes {:.2f} seconds".format(end_time - start_time))
@@ -182,9 +184,9 @@ def main():
     pred_K = len(Sigma)
     Sigma = [s.reshape(2,2) for s in Sigma]
     genes = pd.read_csv(gene_file)
-    df_bivar_gene = ml_mages.summarize_bivariate_gene(genes,betas,cls_lbs,pred_K)
+    df_multi_gene = ml_mages.summarize_multivariate_gene(genes,betas,cls_lbs,pred_K)
     # save
-    df_bivar_gene.to_csv(os.path.join(output_path,"bivar_gene_{}.csv".format("-".join(traits))), index=False)
+    df_multi_gene.to_csv(os.path.join(output_path,"multivar_gene_{}.csv".format("-".join(traits))), index=False)
     end_time = time.time()
     print("Bivariate gene analysis takes {:.2f} seconds".format(end_time - start_time))
 

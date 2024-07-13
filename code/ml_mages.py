@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import scipy as sp
+import itertools 
 import time
 import torch
 import torch.nn as nn
@@ -260,9 +261,9 @@ def enrichment_test(genes, eps_eff, beta_reg, ld, use_davies=False):
     return {'P':p_vals,'STAT':test_stats,'VAR':test_stat_vars}
 
 
-def summarize_bivariate_gene(genes, betas, cls_lbs, pred_K):
+def summarize_multivariate_gene(genes, betas, cls_lbs, pred_K):
     """
-    Summarizes bivariate gene associations.
+    Summarizes multivariate gene associations.
 
     Args:
         genes (DataFrame): A DataFrame containing gene information.
@@ -274,6 +275,11 @@ def summarize_bivariate_gene(genes, betas, cls_lbs, pred_K):
         DataFrame: A DataFrame containing summarized gene-level assocations.
 
     """
+    if betas.ndim<2:
+        betas = np.expand_dims(betas, axis=1)
+    p = betas.shape[1]
+    all_pw_comb = list(itertools.combinations_with_replacement(np.arange(p), r=2))
+
     genes_cls_cnt = list()
     genes_beta_prod_all_cls = list()
     for i_g in range(len(genes)):
@@ -285,7 +291,11 @@ def summarize_bivariate_gene(genes, betas, cls_lbs, pred_K):
         genes_cls_cnt.append(cls_cnt[np.arange(pred_K)].values)
 
         s = genes.loc[i_g]['N_SNPS']
-        genes_beta_prod_all_cls.append([np.sum(betas_g[:,0]**2)/s,np.sum(betas_g[:,1]**2)/s,np.sum(betas_g[:,0]*betas_g[:,1])/s])
+        prod_list = list()
+        for pw in all_pw_comb:
+            prod_list.append(np.sum(betas_g[:,pw[0]]*betas_g[:,pw[1]])/s)
+        genes_beta_prod_all_cls.append(prod_list)
+        # genes_beta_prod_all_cls.append([np.sum(betas_g[:,0]**2)/s,np.sum(betas_g[:,1]**2)/s,np.sum(betas_g[:,0]*betas_g[:,1])/s])
         
     genes_cls_cnt = np.array(genes_cls_cnt)
     genes_beta_prod_all_cls = np.array(genes_beta_prod_all_cls)
@@ -294,7 +304,10 @@ def summarize_bivariate_gene(genes, betas, cls_lbs, pred_K):
     df_gene['size'] = genes['N_SNPS']
     for cls in range(pred_K):
         df_gene['cls{}_frac'.format(cls+1)] = genes_cls_cnt[:,cls]/df_gene['size']
-    prod_types = ['b1b1','b2b2','b1b2']
+    # prod_types = ['b1b1','b2b2','b1b2']
+    prod_types = list()
+    for pw in all_pw_comb:
+        prod_types.append("b{}b{}".format(pw[0]+1,pw[1]+1))
     df_gene[prod_types] = genes_beta_prod_all_cls
 
     return df_gene
@@ -445,11 +458,11 @@ def plot_shrinkage(beta_obs, beta_reg, beta_chrs, save_file):
     cols = ["BETA_OBS","BETA_REG"]
     for i,col in enumerate(cols):
         ax = axes[i]
-        sp = sns.scatterplot(data=df_results[df_results['is_odd']], 
+        sf = sns.scatterplot(data=df_results[df_results['is_odd']], 
                              x='idx', y=col, s=4, 
                              color='#999999',linewidth=0,
                              ax=ax)
-        sp = sns.scatterplot(data=df_results[~df_results['is_odd']], 
+        sf = sns.scatterplot(data=df_results[~df_results['is_odd']], 
                              x='idx', y=col, s=4, 
                              color='#404040',linewidth=0,
                              ax=ax)
@@ -496,11 +509,11 @@ def plot_enrichment(df_enrich, save_file, level=0.05):
     
     fig, ax = plt.subplots(1,1, figsize=(7, 2), dpi=200)
     # plot data
-    sp = sns.scatterplot(data=df_enrich[df_enrich['is_odd']], 
+    sf = sns.scatterplot(data=df_enrich[df_enrich['is_odd']], 
                          x='idx', y='neglogp', s=3, 
                          color='#999999',linewidth=0,
                          ax=ax)
-    sp = sns.scatterplot(data=df_enrich[~df_enrich['is_odd']], 
+    sf = sns.scatterplot(data=df_enrich[~df_enrich['is_odd']], 
                          x='idx', y='neglogp', s=3, 
                          color='#404040',linewidth=0,
                          ax=ax)
@@ -516,6 +529,14 @@ def plot_enrichment(df_enrich, save_file, level=0.05):
     ax.set_ylabel(r'adjusted $-log_{10}p$')
     
     fig.savefig(save_file, bbox_inches='tight', dpi=200)
+
+
+def construct_new_model(model_layer,n_features,feature_lb):
+    if model_layer==3:
+        model = Fc3(n_features,feature_lb)
+    else:
+        model = Fc2(n_features,feature_lb)
+    return model
 
 
 # 2-layer FFNN
