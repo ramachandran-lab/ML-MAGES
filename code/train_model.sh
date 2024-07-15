@@ -25,7 +25,7 @@ val_chrs=20
 # model_idx=0
 
 # Run command (Python 3.9.16 is used for implementation)
-for model_idx in {0..2}
+for model_idx in {3..9} # train multiple models for ensemble learning
 do
     python -u train_model.py $model_layer $top_r $phenotypes $geno_path $ld_path $gwas_path $sim_path $sim_label_prefix $output_base_path $train_chrs $val_chrs $model_idx\
     > ${output_base_path}/log/train_Fc${model_layer}top${top_r}_model${model_idx}.log 2>&1 

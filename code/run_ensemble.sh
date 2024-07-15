@@ -23,6 +23,15 @@ mkdir -p ${output_path}
 mkdir -p ${output_path}/log
 
 # Run command (Python 3.9.16 is used for implementation)
-python -u run_ensemble.py $gwa_files $traits $ld_path $ld_block_file $gene_file $model_path $n_layer $top_r $output_path \
+python -u run_ensemble.py \
+--gwa_files $gwa_files \
+--traits $traits \
+--ld_path $ld_path \
+--ld_block_file $ld_block_file \
+--gene_file $gene_file \
+--model_path $model_path \
+--n_layer $n_layer \
+--top_r $top_r \
+--output_path $output_path \
 > ${output_path}/log/run_ensemble.log 2>&1 
 

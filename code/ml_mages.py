@@ -418,9 +418,9 @@ def plot_clustering(beta_nz, pred_cls, pred_K, Sigma, pi, traits, save_file):
     
     axes[1].yaxis.get_label().set_visible(True)
     fig.tight_layout()
-    fig.savefig(save_file, bbox_inches='tight', dpi=200)
-
-    return
+    if save_file!="":
+        fig.savefig(save_file, bbox_inches='tight', dpi=200)
+    return fig
 
 
 def plot_shrinkage(beta_obs, beta_reg, beta_chrs, save_file):
@@ -477,7 +477,9 @@ def plot_shrinkage(beta_obs, beta_reg, beta_chrs, save_file):
         ax.set_ylabel(col)
     
     fig.tight_layout()
-    fig.savefig(save_file, bbox_inches='tight', dpi=200)
+    if save_file!="":
+        fig.savefig(save_file, bbox_inches='tight', dpi=200)
+    return fig
 
 
 def plot_enrichment(df_enrich, save_file, level=0.05):
@@ -527,9 +529,9 @@ def plot_enrichment(df_enrich, save_file, level=0.05):
     ax.set_xlabel("Chromosome")
     ax.set_xticks([])
     ax.set_ylabel(r'adjusted $-log_{10}p$')
-    
-    fig.savefig(save_file, bbox_inches='tight', dpi=200)
-
+    if save_file!="":
+        fig.savefig(save_file, bbox_inches='tight', dpi=200)
+    return fig
 
 def construct_new_model(model_layer,n_features,feature_lb):
     if model_layer==3:

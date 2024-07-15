@@ -3,33 +3,33 @@ import sys
 import time
 import numpy as np
 import pandas as pd
+import argparse
 import torch
 import ml_mages
 
-def main():
-    # take in command line arguments
-    if len(sys.argv) != 10:
-        print("Usage: {} run_sample.py gwa_files traits ld_path ld_block_file gene_file model_path n_layer top_r output_path".format(sys.argv[0]))
-        sys.exit(1)
 
-    gwa_files = sys.argv[1].split(",")
+def main(args):
+    # take in command line arguments
+    print("-----Required Arguments: ")
+    gwa_files = args.gwa_files.split(",")
     print("gwa_files:", gwa_files)
-    traits = sys.argv[2].split(",")
+    traits = args.traits.split(",")
     print("traits:", traits)
-    ld_path = sys.argv[3]
+    ld_path = args.ld_path
     print("ld_path:", ld_path)
-    ld_block_file = sys.argv[4]
+    ld_block_file = args.ld_block_file
     print("ld_block_file:", ld_block_file)
-    gene_file = sys.argv[5]
+    gene_file = args.gene_file
     print("gene_file:", gene_file)
-    model_path = sys.argv[6]
+    model_path = args.model_path
     print("model_path:", model_path)
-    n_layer = int(sys.argv[7])
+    n_layer = args.n_layer
     print("n_layer:", n_layer)
-    top_r = int(sys.argv[8])
+    top_r = args.top_r
     print("top_r:", top_r)
-    output_path = sys.argv[9]
+    output_path = args.output_path
     print("output_path:", output_path)
+
     scale = 250
     n_models = 10
     n_traits = len(traits)
@@ -134,7 +134,7 @@ def main():
         # beta_zero_multi = beta_reg_multi[~is_nz,:]
 
     end_time = time.time()
-    print("Bivariate clustering takes {:.2f} seconds".format(end_time - start_time))
+    print("Multivariate clustering takes {:.2f} seconds".format(end_time - start_time))
 
     # gene-level analysis 
     # enrichment test
@@ -170,7 +170,7 @@ def main():
     end_time = time.time()
     print("Univariate gene enrichment analysis takes {:.2f} seconds".format(end_time - start_time))
 
-    # bivariate analysis
+    # multivariate analysis
     start_time = time.time()
     betas = list()
     for i_trait, trait in enumerate(traits):
@@ -182,15 +182,33 @@ def main():
     cls_lbs = np.loadtxt(os.path.join(output_path,"multivar_{}_cls.txt".format("-".join(traits))), delimiter=',') 
     Sigma = np.loadtxt(os.path.join(output_path,"multivar_{}_Sigma.txt".format("-".join(traits))), delimiter=',') 
     pred_K = len(Sigma)
-    Sigma = [s.reshape(2,2) for s in Sigma]
+    Sigma = [s.reshape(n_traits,n_traits) for s in Sigma]
     genes = pd.read_csv(gene_file)
     df_multi_gene = ml_mages.summarize_multivariate_gene(genes,betas,cls_lbs,pred_K)
     # save
     df_multi_gene.to_csv(os.path.join(output_path,"multivar_gene_{}.csv".format("-".join(traits))), index=False)
     end_time = time.time()
-    print("Bivariate gene analysis takes {:.2f} seconds".format(end_time - start_time))
+    print("Multivariate gene analysis takes {:.2f} seconds".format(end_time - start_time))
 
     print("============DONE============")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Please provide the required arguments')
+
+    # Required argument
+    parser.add_argument('--gwa_files', type=str, required=True, help='comma-separated list of GWA files')
+    parser.add_argument('--traits', type=str, required=True, help='comma-separated list of traits associated with the GWA files')
+    parser.add_argument('--ld_path', type=str, required=True, help='path to the LD (block) files')
+    parser.add_argument('--ld_block_file', type=str, required=True, help='file containing the LD block IDs')
+    parser.add_argument('--gene_file', type=str, required=True, help='file containing gene data')
+    parser.add_argument('--model_path', type=str, required=True, help='path to the trained models')
+    parser.add_argument('--n_layer', type=int, choices=[2,3], required=True, help='number of layers in the model, chosen from [2,3]')
+    parser.add_argument('--top_r', type=int, choices=[15], required=True, help='number of top top  (highest correlation) variants used to construct the features, chosen from [15]')
+    parser.add_argument('--output_path', type=str, required=True, help='path to save the output files')
+
+    # # Optional arguments
+    # parser.add_argument('--optional_arg1', type=int, default=42, help='This is an optional integer argument with default as 42')
+
+    args = parser.parse_args()
+    main(args)
+
