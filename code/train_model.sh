@@ -1,5 +1,5 @@
 # Number of layers of the model
-model_layer=2
+n_layer=2
 # Number of top variants used in features
 top_r=15
 # Phenotypes (separated by comma) used for matching the simulation to real data
@@ -25,8 +25,21 @@ val_chrs=20
 # model_idx=0
 
 # Run command (Python 3.9.16 is used for implementation)
-for model_idx in {3..9} # train multiple models for ensemble learning
+for model_idx in {2..3} # train multiple models for ensemble learning
 do
-    python -u train_model.py $model_layer $top_r $phenotypes $geno_path $ld_path $gwas_path $sim_path $sim_label_prefix $output_base_path $train_chrs $val_chrs $model_idx\
-    > ${output_base_path}/log/train_Fc${model_layer}top${top_r}_model${model_idx}.log 2>&1 
+    python -u train_model.py \
+    --n_layer $n_layer \
+    --top_r $top_r \
+    --phenotypes $phenotypes \
+    --geno_path $geno_path \
+    --ld_path $ld_path \
+    --gwas_path $gwas_path \
+    --sim_path $sim_path \
+    --sim_label_prefix $sim_label_prefix \
+    --output_base_path $output_base_path \
+    --train_chrs $train_chrs \
+    --val_chrs $val_chrs \
+    --model_idx $model_idx \
+    > ${output_base_path}/log/train_Fc${n_layer}top${top_r}_model${model_idx}.log 2>&1 
 done
+

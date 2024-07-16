@@ -5,6 +5,7 @@ import pandas as pd
 import scipy as sp
 import shutil
 import time
+import argparse
 # for training NN
 import torch
 import torch.nn as nn
@@ -14,39 +15,33 @@ import ml_mages
 import _train_funcs as tf
 
 
-def main():
-    if len(sys.argv) < 13:
-        tmp = "geno_path ld_path gwas_path sim_path sim_label_prefix output_base_path train_chrs(separated by comma) val_chrs(separated by comma) model_idx"
-        tmp2 = "(n_epochs bs lr reg_lambda es_patience es_eps)"
-        print("Usage: {} train_model.py model_layer top_r phenotypes(separated by comma)".format(sys.argv[0]))+" "+tmp+" "+tmp2
-        sys.exit(1)
+def main(args):
 
-    model_layer = int(sys.argv[1])
-    print("Using {}-layer model".format(model_layer))
-    top_r = int(sys.argv[2])
+    n_layer = args.n_layer
+    print("Using {}-layer model".format(n_layer))
+    top_r = args.top_r
     print("Using top {} variants".format(top_r))
-    phenotypes = sys.argv[3].split(",")
-    print("phenotypes",phenotypes)
-    geno_path = sys.argv[4]
+    phenotypes = args.phenotypes.split(",")
+    print("phenotypes", phenotypes)
+    geno_path = args.geno_path
     print("geno_path:", geno_path)
-    ld_path = sys.argv[5]
+    ld_path = args.ld_path
     print("ld_path:", ld_path)
-    gwas_path = sys.argv[6]
+    gwas_path = args.gwas_path
     print("gwas_path:", gwas_path)
-    sim_path = sys.argv[7]
+    sim_path = args.sim_path
     print("sim_path:", sim_path)
-    sim_label_prefix = sys.argv[8]
+    sim_label_prefix = args.sim_label_prefix
     print("sim_label_prefix:", sim_label_prefix)
     max_r = int(sim_label_prefix.split("topr")[1])
-    output_base_path = sys.argv[9]
-    train_chrs = [int(c) for c in sys.argv[10].split(",")]
+    output_base_path = args.output_base_path
+    train_chrs = [int(c) for c in args.train_chrs.split(",")]
     print("train_chrs:", train_chrs)
-    val_chrs = [int(c) for c in sys.argv[11].split(",")]
+    val_chrs = [int(c) for c in args.val_chrs.split(",")]
     print("val_chrs:", val_chrs)
-    #[18,19,20,21,22]
-    model_idx = int(sys.argv[12]) if len(sys.argv)>12 else 0
+    model_idx = args.model_idx
     print("model_idx:", model_idx)
-    output_path = os.path.join(output_base_path,"geno_sim_ensemble_Fc{}top{}".format(model_layer,top_r))
+    output_path = os.path.join(output_base_path,"geno_sim_ensemble_Fc{}top{}".format(n_layer,top_r))
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     print("output_path:", output_path)
@@ -56,17 +51,17 @@ def main():
 
     # training parameters
     print("------TRAINING PARAMETERS------")
-    n_epochs = int(sys.argv[13]) if len(sys.argv)>13 else 500
+    n_epochs = args.n_epochs
     print("maximum training epochs:", n_epochs)
-    bs = int(sys.argv[14]) if len(sys.argv)>14 else 50 # batch_size
+    bs = args.bs # batch_size
     print("batch size:", bs)
-    lr = int(sys.argv[15]) if len(sys.argv)>15 else 1e-4 #4 # learning rate
+    lr = args.lr # learning rate
     print("learning rate:", lr)
-    reg_lambda = int(sys.argv[16]) if len(sys.argv)>16 else 1e-5
+    reg_lambda = args.reg_lambda
     print("regularization lambda for model parameters:", reg_lambda)
-    es_patience = int(sys.argv[17]) if len(sys.argv)>17 else 25 # early stopping patience
+    es_patience = args.es_patience # early stopping patience
     print("early stopping patience:", es_patience)
-    es_eps = int(sys.argv[18]) if len(sys.argv)>18 else 1e-9 # early stopping min_delta
+    es_eps = args.es_eps # early stopping min_delta
     print("early stopping tolerance:", es_eps)
     print("-----------------------------")
 
@@ -92,7 +87,7 @@ def main():
     X_val, y_val, y_val_scale = tf.scale_and_subset(X_test,y_test, beta_real, se_real, max_r, top_r, scale=1, asymmetric=False)
 
     # build model
-    model = ml_mages.construct_new_model(model_layer,n_features,feature_lb)
+    model = ml_mages.construct_new_model(n_layer,n_features,feature_lb)
     print(model)
     n_param = 0
     for W in model.parameters():
@@ -185,7 +180,7 @@ def main():
     best_epoch = np.argsort(np.array(losses)[:,1])[0]
     print("Epoch with best performance:",best_epoch)
     
-    model = ml_mages.construct_new_model(model_layer,n_features,feature_lb)
+    model = ml_mages.construct_new_model(n_layer,n_features,feature_lb)
     model_path = os.path.join(epoch_path,"epoch{}".format(best_epoch))
     state = torch.load(model_path)
     model.load_state_dict(state)
@@ -226,4 +221,28 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Train ML-MAGES model (using simulated data based on genotyped data)')
+    
+    parser.add_argument('--n_layer', type=int, help='Number of layers in the model')
+    parser.add_argument('--top_r', type=int, help='Number of top variants to use')
+    parser.add_argument('--phenotypes', type=str, help='Comma-separated list of phenotypes')
+    parser.add_argument('--geno_path', type=str, help='Path to genotype data files')
+    parser.add_argument('--ld_path', type=str, help='Path to ld files')
+    parser.add_argument('--gwas_path', type=str, help='Path to gwas results files')
+    parser.add_argument('--sim_path', type=str, help='Path to simulated data files')
+    parser.add_argument('--sim_label_prefix', type=str, help='Prefix of simulation labels')
+    parser.add_argument('--output_base_path', type=str, help='Base path for output files')
+    parser.add_argument('--train_chrs', type=str, help='Comma-separated list of training chromosomes')
+    parser.add_argument('--val_chrs', type=str, help='Comma-separated list of validation chromosomes')
+
+    # Optional arguments
+    parser.add_argument('--model_idx', type=int, default=0, help='Model index with default as 0 (for training multiple models with the same architecture)')
+    parser.add_argument('--n_epochs', type=int, default=500, help='Maximum training epochs')
+    parser.add_argument('--bs', type=int, default=50, help='Batch size')
+    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
+    parser.add_argument('--reg_lambda', type=float, default=1e-5, help='Regularization lambda for model parameters')
+    parser.add_argument('--es_patience', type=int, default=25, help='Early stopping patience')
+    parser.add_argument('--es_eps', type=float, default=1e-9, help='Early stopping tolerance')
+
+    args = parser.parse_args()
+    main(args)
