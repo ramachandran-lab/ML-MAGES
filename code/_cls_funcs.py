@@ -62,7 +62,7 @@ def initialize_VEM(p, K):
     Initialize the parameters for the VEM algorithm.
     """
     a, b = np.random.rand(K), np.random.rand(K)
-    nu = np.random.randint(1, 10, K)  
+    nu = np.random.randint(p, 8+p, K)  
     L = list()
     for i in range(p): # initialize with dimension-specific cls
         mat = np.identity(p)*100
