@@ -6,7 +6,13 @@ import itertools
 import time
 import torch
 import torch.nn as nn
-from chiscore import liu_sf, davies_pvalue
+CHISCORE_SUCCESS = True
+try:
+    from chiscore import liu_sf, davies_pvalue
+except:
+    CHISCORE_SUCCESS = False
+    pass
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Ellipse
@@ -207,7 +213,6 @@ def clustering(beta_reg, K=25, n_runs=25):
 
     return Sigma, pi, pred_K, pred_cls
 
-
 def enrichment_test(genes, eps_eff, beta_reg, ld, use_davies=False):
     """
     Perform enrichment test for a list of genes.
@@ -249,10 +254,13 @@ def enrichment_test(genes, eps_eff, beta_reg, ld, use_davies=False):
         test_stat = betas_g.T @ weight_matrix @ betas_g
         #compute test statistics variance
         t_var = np.diag((ld_g * eps_eff) @ (ld_g * eps_eff)).sum()
-        if use_davies:
-            (p_val_g, _, _, _) = liu_sf(test_stat, e_val, 1, 0)
+        if CHISCORE_SUCCESS:
+            if use_davies:
+                (p_val_g, _, _, _) = liu_sf(test_stat, e_val, 1, 0)
+            else:
+                p_val_g = davies_pvalue(test_stat, mat)
         else:
-            p_val_g = davies_pvalue(test_stat, mat)
+            p_val_g = 1
         p_val_g = 1e-20 if p_val_g <= 0.0 else p_val_g
         p_vals.append(p_val_g)
         test_stats.append(test_stat)
