@@ -10,6 +10,7 @@ CHISCORE_SUCCESS = True
 try:
     from chiscore import liu_sf, davies_pvalue
 except:
+    print("Unable to import chiscore. Please install chiscore package separately.")
     CHISCORE_SUCCESS = False
     pass
 
