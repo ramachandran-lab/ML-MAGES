@@ -113,7 +113,7 @@ The script `run_ensemble.py` outputs several files to the `output_path` folder s
    The multivariate gene-level result file contains the same rows as in input  `gene_file`, with a couple additional columns:
      * 'size' is the same as 'N_SNPS', denoting the number of variants considered for the gene.
      * 'cls1_frac', ..., 'cls*K*_frac' (*K* columns): the fraction of variants in each gene that belong to each cluster, from cluster 1 to cluster *K*.
-     * 'b1b1', 'b1b2', 'b2b2', etc. (*K(K+1)/2* columns): sum of the product of regularized effects for each pair of traits (including a trait to itself) for all variants in the gene. 
+     * 'b1b1', 'b1b2', 'b2b2', etc. (*K(K+1)/2* columns): sum of the product of regularized effects for each pair of traits (including a trait to itself) for all variants in the gene, divided by the gene size. 
    
 6. Visualization of enrichment results:
    * `enrichment_X.png`
