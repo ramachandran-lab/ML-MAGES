@@ -10,12 +10,24 @@ Python 3.9.16 is used for implementing the method. A list of Python packages use
 
 The `code` folder in this repository contains the following files:
 
-- `run_sample.sh`: This file contains the bash script with the command to run the Python code file for the sample data, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
-- `run_sample.py`: This file contains the code to apply the method on sample data.
+**Main functions:**
 - `ml_mages.py`: This file includes implemented functions for each step of the method.
 - `_cls_funcs_.py`: This file contains utility functions for the clustering algorithm.
+- `_train_funcs_.py`: This file contains functions for training the models.
+
+**Run the method using a single trained model for effect size shrinkage on sample data:**
+- `run_sample.sh`: This file contains the bash script with the command to run the Python code file for the sample data, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
+- `run_sample.py`: This file contains the code to apply the method on sample data.
+
+**Run the full method using ensemble learning on multiple trained models for effect size shrinkage on genotype data (not included):**  
 - `run_ensemble.sh`: This file contains the bash script with the command to run the Python code file for the full genotyped data (not included) using ensembled models, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
 - `run_ensemble.py`: This file contains the code to apply the method on the full genotyped data (not included).
+
+**Additional files for simulating training data and training models from scratch:**  
+- `train_model.sh`: This file contains the bash script with the command to run the Python code file for training the models for effect size shrinkage based on the full genotyped data (not included).
+- `train_model.py`: This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
+- `simulate_train.sh`: This file contains the bash script with the command to run the Python code file for simulating effects for pseudo-traits based on real genotyped data and LD (not included), which are used for training the models.
+- `simulate_train.py`: This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
 
 ## Data Folder
 ### Sample data
