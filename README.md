@@ -110,7 +110,11 @@ The script `run_ensemble.py` outputs several files to the `output_path` folder s
    Each result file has the same rows as in input  `gene_file`, with 3 additional columns, 'P', 'STAT', and 'VAR', corresponding to the p-value, test statistics, and variance of test statistics of the gene-level enrichment test. If the dependency package *chiscore* can not be installed successfully, that is, gene-level test is not available, then p-values will all be set to 1 by default, and a warning message *"Unable to import chiscore. Please install chiscore package separately"* will pop up when running the program. 
    * `multivar_gene_X-Y.csv`
    
-   The multivariate gene-level result file contains 
+   The multivariate gene-level result file contains the same rows as in input  `gene_file`, with a couple additional columns:
+     * 'size' is the same as 'N_SNPS', denoting the number of variants considered for the gene.
+     * 'cls1_frac', ..., 'cls*K*_frac' (*K* columns): the fraction of variants in each gene that belong to each cluster, from cluster 1 to cluster *K*.
+     * 'b1b1', 'b1b2', 'b2b2', etc. (*K(K+1)/2* columns): sum of the product of regularized effects for each pair of traits (including a trait to itself) for all variants in the gene. 
+   
 6. Visualization of enrichment results:
    * `enrichment_X.png`
    * `enrichment_Y.png` 
