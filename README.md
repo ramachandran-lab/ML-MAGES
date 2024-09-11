@@ -1,6 +1,6 @@
 # ML-MAGES
 
-This folder contains sample data and code for ML-MAGES: machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage.
+This folder contains sample data and code for __*ML-MAGES*__: machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage.
 
 Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
