@@ -78,15 +78,18 @@ The script `run_ensemble.py` outputs several files to the `output_path` folder s
 1. Shrinkage results:
    * `regularized_effects_X.txt`
    * `regularized_effects_Y.txt`
+   
    Each line corresponds to the regularized effect of one variant, for a total of M variants.
 2. Visualization of shrinkage results:
    * `shrinkage_X.png`
    * `shrinkage_Y.png`
+   
    The plots show the effects before and after shrinkage for the M variants along the genome.
 3. Clustering results:
    * `univar_X_cls.txt`, `univar_X_pi.txt`, `univar_X_Sigma.txt`, `univar_X_zc.txt`
    * `univar_Y_cls.txt`, `univar_Y_pi.txt`, `univar_Y_Sigma.txt`, `univar_Y_zc.txt`
    * `multivar_X-Y_cls.txt`, `multivar_X-Y_pi.txt`, `multivar_X-Y_Sigma.txt`, `multivar_X-Y_zc.txt`
+   
    The `*_cls.txt` file contains the cluster label for each variant, where a label of -1 denotes the nearly-zero effect that is not considered in the clustering, and the cluster labels start from index 0. 
    The `*_pi.txt` file contains the mixing coefficient $\pi$ of the clusters.
    The `*_Sigma.txt` file contains the covariance matrices of clusters. Each line records the covariance of one cluster, and if it's multivariate, the matrix is flattened in row-major order with entries separated by comma.
@@ -95,15 +98,20 @@ The script `run_ensemble.py` outputs several files to the `output_path` folder s
    * `clustering_multivar_X-Y.png`
    * `clustering_univar_X.png`
    * `clustering_univar_Y.png`
+   
    Variants are colored by clusters, and Gaussians inferred for each cluster are shown along the side in the same colors (for up to 2D Gaussian). 
 5. Enrichment results:
    * `enrichment_X.csv`
    * `enrichment_Y.csv`
+   
    Each result file has the same rows as in input  `gene_file`, with 3 additional columns, 'P', 'STAT', and 'VAR', corresponding to the p-value, test statistics, and variance of test statistics of the gene-level enrichment test. If the dependency package *chiscore* can not be installed successfully, that is, gene-level test is not available, then p-values will all be set to 1 by default, and a warning message *"Unable to import chiscore. Please install chiscore package separately"* will pop up when running the program. 
    * `multivar_gene_X-Y.csv`
+   
    The multivariate gene-level result file contains 
 6. Visualization of enrichment results:
    * `enrichment_X.png`
    * `enrichment_Y.png` 
+   
    The manhattan plot shows negative log of adjusted p-values for each gene along the genome.
+
 Users may generate other visualizations or perform downstream analyses using the result provided in these files. 
