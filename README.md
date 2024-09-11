@@ -28,6 +28,9 @@ The `code` folder in this repository contains the following files:
 - `train_model.py`: This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
 - `simulate_train.sh`: This file contains the bash script with the command to run the Python code file for simulating effects for pseudo-traits based on real genotyped data and LD (not included), which are used for training the models.
 - `simulate_train.py`: This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
+  
+**Additional files for visualizing gene-level analysis results:** 
+- `demo_visualize_outputs.ipynb`: This Jupyter notebook demonstrates how to visualize and analyze gene-level output for multi-trait analyses. 
 
 ## Data Folder
 ### Sample data
