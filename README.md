@@ -18,6 +18,7 @@ The `code` folder in this repository contains the following files:
 - `run_ensemble.py`: This file contains the code to apply the method on the full genotyped data (not included).
 
 ## Data Folder
+### Sample data
 The `sample_data` folder in this repository contains the following files:
 
 - `sample_gwa_HDL.txt` and `sample_gwa_LDL.txt`: These files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL) .
@@ -26,7 +27,8 @@ The `sample_data` folder in this repository contains the following files:
 - `sample_genelist`: This file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it. 
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
-Input data files to `run_ensemble.py` are not included due to large file sizes. The following files (used in `run_ensemble.sh`) are needed:
+### Data for running the full method with ensembled models (not included)
+Input data files to `run_ensemble.py` are not included due to large file sizes. The following files (as used in `run_ensemble.sh`) are needed:
 
 - The `block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
   - The full LD of split segments along all the chromosomes, ordered by chromosome and position, are saved in x files labeled as `block_0.ld`, `block_1.ld`, to `block_x.ld`, each being a comma-delimited matrix. 
@@ -48,10 +50,11 @@ The `trained_model` folder in this repository contains trained models.
 The subfolder `genotyped_simulated_training` contains the six models, each of a different architecture, trained using genotyped-data-based simulation described in the paper. We do not provide the simulated training data, but simulation and training can be performed following steps described in appendix. 
 
 The subfolder `imputed_simulated_training` contains two set of models, each with 10 models of a same architecture, trained using imputed-data-based simulation. The output of each set of models are averaged to generate an ensemble result of shrinkage, as used in the `run_ensemble.py`. Similarly, simulation and training can be performed following steps described in appendix. 
+  * The model files are named as ''Fc*a*top*b*_*z*.model'', where *a* is the number of fully-connected layers in the neural network model, *b* is the number of top variants used to construct the features, and *c* is the index of the model among all models of the same architecture.
 
-## Input for `run_ensemble.py`
+## Input arguments for `run_ensemble.py`
 
-The main function `run_ensemble.py` takes in 8 input arguments. These arguments are required for running the script and performing *ML-MAGES* on the given data:
+The main function `run_ensemble.py` takes in 9 input arguments. These arguments are required for running the script and performing *ML-MAGES* on the given data:
 
 - `--gwa_files`: A comma-separated list of GWA files. These files contain the GWA results for different traits. E.g., `../data/gwa/gwas_MCV.csv,../data/gwa/gwas_MPV.csv,../data/gwa/gwas_PLC.csv`.
 
