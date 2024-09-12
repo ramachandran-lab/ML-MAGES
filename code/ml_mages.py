@@ -11,6 +11,7 @@ try:
     from chiscore import liu_sf, davies_pvalue
 except:
     print("Unable to import chiscore. Please install chiscore package separately.")
+    print("Using alternative method for linear-combination-of-chi-square test for gene-level test.")
     CHISCORE_SUCCESS = False
     pass
 
@@ -18,6 +19,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Ellipse
 from _cls_funcs import infmix_clustering
+from _enrich_funcs import test_chi2comb_alt
 
 
 def load_gwa(gwa_files, cols=['BETA','SE']):
@@ -261,7 +263,7 @@ def enrichment_test(genes, eps_eff, beta_reg, ld, use_davies=False):
             else:
                 p_val_g = davies_pvalue(test_stat, mat)
         else:
-            p_val_g = 1
+            p_val_g = test_chi2comb_alt(test_stat, e_val)
         p_val_g = 1e-20 if p_val_g <= 0.0 else p_val_g
         p_vals.append(p_val_g)
         test_stats.append(test_stat)
