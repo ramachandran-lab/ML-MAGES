@@ -24,6 +24,7 @@ python -u run_ensemble.py \
 --output_path $output_path 
 ```
 * To use your own shrinkage models, follow `simulate_train.sh` to generate synthetic data and `train_model.sh` to train the models.
+* To visualize multi-trait analysis results, `demo_visualize_outputs.ipynb` provides an example. 
 
 ## Code Folder
 
