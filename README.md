@@ -4,7 +4,26 @@ This folder contains sample data and code for __*ML-MAGES*__: machine learning a
 
 Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
-*The folders `data` and `output` for running the method on genotyped data are not included in the repository. Data is available upon request.*
+*Sample data is provided in the folder `sample_data`. The folders `data` and `output` for running the method on genotyped data are not included in the repository. These data are available upon request.*
+
+#### Quick Start:
+* Install Python packages as needed.
+* Clone this repository to your local directory.
+* To run the method on sample data, follow the commands in `run_sample.sh` and `run_ensemble.sh`.
+* To run the method on your own data, pre-process the data to generate the summary statistics and LD files, as well as the meta information file for genes (if provided). Format them as required by the input arguments for `run_ensemble.py` (see below for details). Then run the command
+```bash
+python -u run_ensemble.py \
+--gwa_files $gwa_files \
+--traits $traits \
+--ld_path $ld_path \
+--ld_block_file $ld_block_file \
+--gene_file $gene_file \
+--model_path $model_path \
+--n_layer $n_layer \
+--top_r $top_r \
+--output_path $output_path 
+```
+* To use your own shrinkage models, follow `simulate_train.sh` to generate synthetic data and `train_model.sh` to train the models.
 
 ## Code Folder
 
