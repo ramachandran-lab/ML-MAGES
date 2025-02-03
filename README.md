@@ -1,6 +1,7 @@
 # ML-MAGES
 
-This folder contains sample data and code for __*ML-MAGES*__: machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage.
+This folder contains sample data and code for __*ML-MAGES*: A machine learning framework for multivariate
+genetic association analyses with genes and effect size shrinkage__.
 
 Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
@@ -179,3 +180,10 @@ The script `run_ensemble.py` outputs several files to the `output_path` folder s
    The manhattan plot shows negative log of adjusted p-values for each gene along the genome.
 
 Users may generate other visualizations or perform downstream analyses using the result provided in these files. 
+
+----
+**Citation**
+
+Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
+
+For questions and comments, please contact Xiran Liu at *xiran_liu1 at brown dot edu*.
