@@ -4,13 +4,14 @@ This folder contains sample data and code for __*ML-MAGES*__: machine learning a
 
 Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
-*Sample data is provided in the folder `sample_data`. The folders `data` and `output` for running the method on genotyped data are not included in the repository. These data are available upon request.*
+*Sample data is provided in the folder `sample_data`, which can be run using the code in `run_sample.sh`. The folders `data` and `output` for running the method on genotyped data are not included in the repository due to file size and accessibility restriction. These data are available upon request.*
 
 #### Quick Start:
 * Install Python packages as needed.
 * Clone this repository to your local directory.
+* The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
 * To run the method on sample data, follow the commands in `run_sample.sh` and `run_ensemble.sh`.
-* To run the method on your own data, pre-process the data to generate the summary statistics and LD files, as well as the meta information file for genes (if provided). Format them as required by the input arguments for `run_ensemble.py` (see below for details). Then run the command
+* To run the method with pre-trained models on your own data, pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (if provided). Format them as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details). Then run the command
 ```bash
 python -u run_ensemble.py \
 --gwa_files $gwa_files \
@@ -24,7 +25,8 @@ python -u run_ensemble.py \
 --output_path $output_path 
 ```
 * To use your own shrinkage models, follow `simulate_train.sh` to generate synthetic data and `train_model.sh` to train the models.
-* To visualize multi-trait analysis results, `demo_visualize_outputs.ipynb` provides an example. 
+* To visualize multi-trait analysis results, `demo_visualize_outputs.ipynb` provides an example.
+* To generate new synthetic data for performance evaluation, follow `simulate_evaluation.sh`. The notebook `evaluate_perf.ipynb` provides an example for performance evaluation using the synthetic data.
 
 ## Code Folder
 
@@ -32,8 +34,10 @@ The `code` folder in this repository contains the following files:
 
 **Main functions:**
 - `ml_mages.py`: This file includes implemented functions for each step of the method.
-- `_cls_funcs_.py`: This file contains utility functions for the clustering algorithm.
-- `_train_funcs_.py`: This file contains functions for training the models.
+- `_cls_funcs.py`: This file contains utility functions for the clustering algorithm.
+- `_train_funcs.py`: This file contains functions for training the models.
+- `_enrich_funcs.py`: This file contains functions to replace the default enrichment test function if the installation of the required package *chiscore* fails.
+- `_sim_funcs.py`: This file contains functions for simulating data for performance evaluation as well as evaluating the performance using the simulated data.
 
 **Run the method using a single trained model for effect size shrinkage on sample data:**
 - `run_sample.sh`: This file contains the bash script with the command to run the Python code file for the sample data, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
@@ -48,9 +52,15 @@ The `code` folder in this repository contains the following files:
 - `train_model.py`: This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
 - `simulate_train.sh`: This file contains the bash script with the command to run the Python code file for simulating effects for pseudo-traits based on real genotyped data and LD (not included), which are used for training the models.
 - `simulate_train.py`: This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
+
+  **Additional files for simulating evluation data:**  
+- `simulate_evaluation.sh`: This file contains the bash script with the command to run the Python code file for simulating synthetic traits based on real genotyped data and LD (not included), which are used for evaluting the performances. 
+- `simulate_evaluation.py`: This file contains the code to simulate synthetic traits for performance evluation based on real genotyped data and LD (not included). Multiple traits with various association relationships can be simulated.
   
-**Additional files for visualizing gene-level analysis results:** 
-- `demo_visualize_outputs.ipynb`: This Jupyter notebook demonstrates how to visualize and analyze gene-level output for multi-trait analyses. 
+**Additional files for visualizing results and comparing performances:** 
+- `demo_visualize_outputs.ipynb`: This Jupyter notebook demonstrates how to visualize and analyze gene-level output for multi-trait analyses.
+- `evaluate_perf.ipynb`: This Jupyter notebook demonstrates how to evaluate the performances of the methods using the simulated data.
+
 
 ## Data Folder
 ### Sample data
@@ -65,12 +75,15 @@ These files provide the necessary data for performing the ML-MAGES method descri
 ### Data for running the full method with ensembled models (not included)
 Input data files to `run_ensemble.py` are not included due to large file sizes. The following files (as used in `run_ensemble.sh`) are needed:
 
-- The `block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
+- The `data/block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
   - The full LD of split segments along all the chromosomes, ordered by chromosome and position, are saved in x files labeled as `block_0.ld`, `block_1.ld`, to `block_x.ld`, each being a comma-delimited matrix. 
   - The file `block_ids.txt` contains x lines, where each line is the index of the last variant in the corresponding block **plus one**. Indices go from 0 to M-1, where M is the total number of variants along all the chromosomes. For instance, if `block_0.ld` is of size 200x200 and `block_1.ld` is of size 210x210, then the first two lines in `block_ids.txt` should be 200 and 410.
   - [Optional] The file `blocks_meta.csv` is a comma-delimited file with three columns: 'block_id', 'chr', 'id_in_chr', and x rows (excluding the header).  The three columns correspond to the block index (as used in the `.ld` file names), the chromosome to which the block belongs, and the index of the block within that chromosome. For instance, a row of `405,15,0` means the `block_405.ld` is the first (indexed by 0) block in CHR15. 
-- The `gwa` folder contains GWA result files, labeled as `gwas_TRAIT.csv` where `TRAIT` is the trait name and should be the same as the one used for argument `traits` in the input to `run_ensemble.py`. The file for each trait should have exactly M lines excluding the header, with each line corresponds to a variant, and all variants ordered the same as those in LD blocks. There should be at least three columns: 'BETA','SE', and 'CHR'. 'BETA' is the estimated GWA effect of the variant; 'SE' is the standard error of the estimated effect; 'CHR' is the chromosome of the variant. 
-- `genelist.csv` is a comma-delimited file containing gene information used for gene-level analyses. It has 7 columns:
+- The `data/gwa` folder contains GWA result files, labeled as `gwas_TRAIT.csv` where `TRAIT` is the trait name and should be the same as the one used for argument `traits` in the input to `run_ensemble.py`. The file for each trait should have exactly M lines excluding the header, with each line corresponds to a variant, and all variants ordered the same as those in LD blocks. There should be at least three columns: 'BETA','SE', and 'CHR'.
+  - 'BETA': the estimated GWA effect of the variant
+  - 'SE': the standard error of the estimated effect
+  - 'CHR': chromosome of the variant 
+- `data/genelist.csv` is a comma-delimited file containing gene information used for gene-level analyses. It has 7 columns:
   - 'CHR': chromosome
   - 'GENE': gene symbol
   - 'START': position (in bp) marking the start of the region considered for this gene
@@ -78,6 +91,15 @@ Input data files to `run_ensemble.py` are not included due to large file sizes. 
   - 'N_SNPS': number of variants (out of the total M variants) contained in the marked region for this gene
   - 'SNP_FIRST': index of the first variant considered for the gene
   - 'SNP_LAST': index of the last variant considered for the gene
+
+The following files, contained in the folder `data/real_for_sim` (not included), are used in `simulate_evaluation.sh` and `evaluate_perf.ipynb`:
+- `ukb_chr15.qced.bim`, `ukb_chr15.qced.bed`, `ukb_chr15.qced.fam`: the genotype data of Chr15 of UKB European individuals in PLINK format.
+- `ukb_chr15.qced.ld`: full LD matrix of Chr15 in UKB European individuals.
+- `blocks_chr15_ws1000.txt`: The (0-based-)indices of the boundary points at which the LD matrix of Chr15 is split into blocks.
+- 
+The simulated training data will be included in the folder `data/simulation` (not shown), and subsequently used for model training.
+
+The simulated evluation data will be included in the folder `data/simulation/sim_gene_mlmt` (not shown), and subsequently used for performance evaluation.
 
 ## Model Folder
 The `trained_model` folder in this repository contains trained models. 
