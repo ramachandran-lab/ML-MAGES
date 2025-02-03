@@ -11,7 +11,7 @@ Python 3.9.16 is used for implementing the method. A list of Python packages use
 * Clone this repository to your local directory.
 * The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
 * To run the method on sample data, follow the commands in `run_sample.sh` and `run_ensemble.sh`.
-* To run the method with pre-trained models on your own data, pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (if provided). Format them as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details). Then run the command
+* To run the method with pre-trained models on your own data, pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#data-for-running-the-full-method-with-ensembled-models-not-included) for detailed data contents). Format the data as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details). Then run the command
 ```bash
 python -u run_ensemble.py \
 --gwa_files $gwa_files \
