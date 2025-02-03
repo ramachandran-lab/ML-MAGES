@@ -50,13 +50,11 @@ class Simulator:
 
 def main():
     if len(sys.argv) < 5:
-        print("Usage: {} simulate_train.py sim_chrs(separated by comma) geno_path ld_path output_path (n_inds) (n_snps) (n_sim) (topr)".format(sys.argv[0]))
+        print("Usage: {} simulate_train.py sim_chrs(separated by comma) geno_path ld_path output_path (n_inds=10000) (n_snps=1000) (n_sim=200) (topr=25)".format(sys.argv[0]))
         sys.exit(1)
 
-    # base_path = "/oscar/data/sramacha/users/xliu293/new_ukb_gwas"
-    # os.path.join(base_path,"data","qc")
     sim_chrs = [int(c) for c in sys.argv[1].split(",")]
-    #[18,19,20,21,22]
+    #e.g., [18,19,20,21,22]
     print("sim_chrs:", sim_chrs)
     geno_path = sys.argv[2]
     print("geno_path:", geno_path)
