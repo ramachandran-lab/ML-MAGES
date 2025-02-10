@@ -8,6 +8,8 @@ from tqdm import tqdm
 from pandas_plink import read_plink
 import itertools
 from functools import reduce
+import argparse
+import time
 
 import ml_mages
 import _sim_funcs as sf
@@ -124,54 +126,53 @@ class MultiTraitSimulator:
         return obs_betas, obs_ses, pd.concat(gwas_res_list)
 
 
-def main():
-    if len(sys.argv) < 8:
-        print("Usage: {} simulate_evaluation.py chr geno_path ld_path gwas_path phenotypes(separated by comma) gene_list_file output_path (n_inds=10000) (min_gene_size=10) (n_traits=3) (causal_types='1;2;3;1,2;1,2,3') (n_sim=100)".format(sys.argv[0]))
-        sys.exit(1)
-
-    chr = int(sys.argv[1])
-    print("chr:", chr) # e.g., 15
-    geno_path = sys.argv[2]
-    print("geno_path:", geno_path)
-    ld_path = sys.argv[3]
-    print("ld_path:", ld_path)
-    gwas_path = sys.argv[4]
-    print("gwas_path:", gwas_path)
-    phenotypes = sys.argv[5].split(",")
-    print("phenotypes", phenotypes)
-    gene_list_file = sys.argv[6]
-    print("gene_list_file:", gene_list_file)
-    sim_path = sys.argv[7]
-    if not os.path.exists(sim_path):
-        os.makedirs(sim_path)
-    print("output_path:", sim_path)
     
-    n_inds = int(sys.argv[8]) if len(sys.argv)>8 else 10000
-    print("n_inds:", n_inds)
-    min_gene_size = int(sys.argv[9]) if len(sys.argv)>9 else 10
-    print("min_gene_size:", min_gene_size)
-    n_traits = int(sys.argv[10]) if len(sys.argv)>10 else 3
-    print("n_traits:", n_traits)
-    causal_types = sys.argv[11] if len(sys.argv)>11 else "1;2;3;1,2;1,2,3"
+def main(args):
+    
+    print("-----Required Arguments: ")
+    chr = args.chr
+    print("chr:", chr) # e.g., 15
+    geno_file = args.geno_file
+    print("geno_file:", geno_file)
+    full_ld_file = args.full_ld_file
+    print("full_ld_file:", full_ld_file)
+    gwa_files = args.gwa_files.split(",")
+    print("gwa_files:", gwa_files)
+    gene_list_file = args.gene_list_file
+    print("gene_list_file:", gene_list_file)
+    output_path = args.output_path
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    print("output_path:", output_path)
+
+    print("-----Optional Arguments: ")
+    n_inds = args.n_inds 
+    print("n_inds (default 10000):", n_inds)
+    min_gene_size = args.min_gene_size
+    print("min_gene_size (default 10):", min_gene_size)
+    n_traits = args.n_traits
+    print("n_traits (default 3):", n_traits)
+    causal_types = args.causal_types
     causal_types = [tuple([int(e) for e in t.split(",")]) for t in causal_types.split(";")]
-    # e.g., "1;2;3;1,2;1,2,3" gives
-    # causal_types = [(1,),(2,),(3,),(1,2),(1,2,3)]
-    print("causal_types:", causal_types)
-    n_sim = int(sys.argv[12]) if len(sys.argv)>12 else 100
-    print("n_sim:", n_sim)
+    # e.g., "1;2;3;1,2;1,2,3" gives causal_types = [(1,),(2,),(3,),(1,2),(1,2,3)]
+    print("causal_types (default 1;2;3;1,2;1,2,3):", causal_types)
+    n_sim = args.n_sim
+    print("n_sim (default 100):", n_sim)
     
     # fixed settings and random seed
     fcg, fcs = 0.1, 0.4
     h2s = [0.8]*n_traits
     np.random.seed(42)
 
+    print("=====//ML-MAGES// Helper Function: Simulate Data for Performance Evaluation=====")
+    start_time = time.time()
+
     # load genotype data
-    (bim, fam, bed) = read_plink(os.path.join(geno_path, "ukb_chr{}.qced.bed".format(chr)),verbose=False)
+    (bim, fam, bed) = read_plink(("{}.bed".format(geno_file)),verbose=False)
     print("Genotype data size:", bim.shape, bed.shape)
     
     # load ld
-    ld_file = os.path.join(ld_path,"ukb_chr{}.qced.ld".format(chr))
-    chr_ld = np.loadtxt(ld_file)
+    chr_ld = np.loadtxt(full_ld_file)
     print("Chr {}, LD size: {}x{}".format(chr, chr_ld.shape[0],chr_ld.shape[1]))
 
     # get n_snps
@@ -206,11 +207,10 @@ def main():
     print("Considering {} genes with size >={}".format(n_genes,min_gene_size))
     
     # load real data 
-    real_files = [os.path.join(gwas_path,"ukb_chr{}.{}.glm.linear".format(chr,pheno)) for pheno in phenotypes]
-    beta_real, se_real = sf.load_real_chr_data(real_files)
+    beta_real, se_real = sf.load_real_chr_data(gwa_files)
     # scale sim data by fitting a Laplace distribution to the real data
     loc_real, scale_real = sp.stats.laplace.fit(beta_real, floc=0)
-    print(beta_real.shape)
+    print("Real gwa size", len(beta_real))
 
     # generate random settings
     causal_types_prob = np.random.dirichlet([5 if len(e)==1 else 10 for e in causal_types],1)[0]
@@ -271,8 +271,31 @@ def main():
         
         # save simulation data
         tmp = np.hstack([scaled_true_betas,scaled_obs_betas,scaled_se])
-        np.savetxt(os.path.join(sim_path,"data_sim{}.txt".format(i_sim)), tmp, delimiter=',')
+        np.savetxt(os.path.join(output_path,"data_sim{}.txt".format(i_sim)), tmp, delimiter=',')
 
+    end_time = time.time()
+    print("Simulating evaluation data takes {:.2f} seconds".format(end_time - start_time))
+
+    print("============DONE============")
+    
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Please provide the required arguments')
+
+    # Required argument
+    parser.add_argument('--chr', type=int, required=True, help='Chr of the real data to base simulation on')
+    parser.add_argument('--geno_file', type=str, required=True, help='path to the genotyped data (in PLINK format)')
+    parser.add_argument('--full_ld_file', type=str, required=True, help='path to the full LD file')
+    parser.add_argument('--gwa_files', type=str, required=True, help='comma-separated list of GWA files used for matching the simulation to real data')
+    parser.add_argument('--gene_list_file', type=str, required=True, help='path to the gene list file (with columns CHR, GENE, START, END)')
+    parser.add_argument('--output_path', type=str, required=True, help='path to save the output simulation files')
+
+    # Optional arguments
+    parser.add_argument('--n_inds', type=int, required=False, default=10000, help='number of individuals to be sampled for each simulation')
+    parser.add_argument('--min_gene_size', type=int, required=False, default=10, help='min number of variants in a gene for gene to be considered as candidate')
+    parser.add_argument('--n_traits', type=int, required=False, default=3, help='number of traits to be simulated')
+    parser.add_argument('--causal_types', type=str, required=False, default="1;2;3;1,2;1,2,3", help='causal types to be simulated')
+    parser.add_argument('--n_sim', type=int, required=False, default=100, help='number of simulations')
+
+    args = parser.parse_args()
+    main(args)

@@ -6,6 +6,8 @@ import statsmodels.api as sm
 from tqdm import tqdm
 from pandas_plink import read_plink
 import ml_mages
+import argparse
+import time
 
 
 class Simulator:
@@ -48,29 +50,28 @@ class Simulator:
     return gwas_res
 
 
-def main():
-    if len(sys.argv) < 5:
-        print("Usage: {} simulate_train.py sim_chrs(separated by comma) geno_path ld_path output_path (n_inds=10000) (n_snps=1000) (n_sim=200) (topr=25)".format(sys.argv[0]))
-        sys.exit(1)
 
-    sim_chrs = [int(c) for c in sys.argv[1].split(",")]
+def main(args):
+
+
+    sim_chrs = [int(c) for c in args.sim_chrs.split(",")]
     #e.g., [18,19,20,21,22]
     print("sim_chrs:", sim_chrs)
-    geno_path = sys.argv[2]
+    geno_path = args.geno_path
     print("geno_path:", geno_path)
-    ld_path = sys.argv[3]
+    ld_path = args.ld_path
     print("ld_path:", ld_path)
-    sim_path = sys.argv[4]
-    if not os.path.exists(sim_path):
-        os.makedirs(sim_path)
-    print("output_path:", sim_path)
-    n_inds = int(sys.argv[5]) if len(sys.argv)>5 else 10000
+    output_path = args.output_path
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    print("output_path:", output_path)
+    n_inds = args.n_inds 
     print("n_inds:", n_inds)
-    n_snps = int(sys.argv[6]) if len(sys.argv)>6 else 1000
+    n_snps = args.n_snps
     print("n_snps:", n_snps)
-    n_sim = int(sys.argv[7]) if len(sys.argv)>7 else 200
+    n_sim = args.n_sim
     print("n_sim:", n_sim)
-    top_r = int(sys.argv[8]) if len(sys.argv)>8 else 25
+    top_r = args.top_r
     print("top_r:", top_r)
 
     max_assoc_frac = 0.05
@@ -78,7 +79,9 @@ def main():
     h2_range = [0.1,0.9] #[0.1,0.9]
     np.random.seed(42)
 
+    print("=====//ML-MAGES// Helper Function: Simulate Training Data=====")
     
+    start_time = time.time()
 
     for chr in sim_chrs:
         sim_label = "ninds{}_nsnps{}_nsim{}_topr{}_chr{}".format(n_inds,n_snps,n_sim,top_r,chr)
@@ -144,13 +147,33 @@ def main():
         print(X_sim.shape, y_sim.shape, meta_sim.shape)
 
         # save simulated data
-        save_file = os.path.join(sim_path,"{}.X".format(sim_label))
+        save_file = os.path.join(output_path,"{}.X".format(sim_label))
         np.savetxt(save_file, X_sim, delimiter=',')
-        save_file = os.path.join(sim_path,"{}.y".format(sim_label))
+        save_file = os.path.join(output_path,"{}.y".format(sim_label))
         np.savetxt(save_file, y_sim, delimiter=',')
-        save_file = os.path.join(sim_path,"{}.meta".format(sim_label))
+        save_file = os.path.join(output_path,"{}.meta".format(sim_label))
         np.savetxt(save_file, meta_sim, delimiter=',')
+
+    end_time = time.time()
+    print("Simulating training data takes {:.2f} seconds".format(end_time - start_time))
+
+    print("============DONE============")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Please provide the required arguments')
+
+    # Required argument
+    parser.add_argument('--sim_chrs', type=str, required=True, help='Chromosomes to base the simulations on (multiple chrs separated by comma)')
+    parser.add_argument('--geno_path', type=str, required=True, help='Path to the genotype data folder containing files "ukb_chr{}.qced" in PLINK format for each chromosome considered')
+    parser.add_argument('--ld_path', type=str, required=True, help='path to full LD data folder containing files "ukb_chr{}.qced.ld" for each chromosome considered')
+    parser.add_argument('--output_path', type=str, required=True, help='path to save the output simulation files')
+
+    # Optional argument
+    parser.add_argument('--n_inds', type=int, required=False, default=10000, help='number of individuals to be sampled for each simulation')
+    parser.add_argument('--n_snps', type=int, required=False, default=1000, help='number of variants to be sampled for each simulation')
+    parser.add_argument('--n_sim', type=int, required=False, default=100, help='number of simulations')
+    parser.add_argument('--top_r', type=int, required=False, default=25, help='number of top (highest correlation) variants to save for future feature construction')
+    
+    args = parser.parse_args()
+    main(args)

@@ -1,5 +1,3 @@
-
-# Directory path for the sample data
 data_dir=../data
 # Comma-separated list of GWA files
 gwa_files=${data_dir}/gwa/gwas_MCV.csv,${data_dir}/gwa/gwas_MPV.csv,${data_dir}/gwa/gwas_PLC.csv
@@ -8,7 +6,7 @@ traits=MCV,MPV,PLC
 # Path for the LD data
 ld_path=${data_dir}/block_ld
 # File containing LD block IDs
-ld_block_file=${ld_path}/block_ids.txt
+ld_block_file=${ld_path}/block_brkpts.txt
 # File containing gene list
 gene_file=${data_dir}/genelist.csv
 # Path for the trained models
