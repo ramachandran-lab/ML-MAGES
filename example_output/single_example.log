@@ -1,0 +1,17 @@
+-----Required Arguments: 
+gwa_files: ['../example_data/example_gwa_HDL.csv', '../example_data/example_gwa_LDL.csv']
+traits: ['HDL', 'LDL']
+ld_path: ../example_data
+ld_block_file: ../example_data/block_brkpts.txt
+gene_file: ../example_data/example_genelist.csv
+model_path: ../trained_models/genotyped_simulated_training
+n_layer: 3
+top_r: 15
+output_path: ../example_output
+=====//ML-MAGES// Run Single Model on Example Data=====
+Loading takes 0.84 seconds
+Shrinkage and univariate clustering take 2.94 seconds
+Bivariate clustering takes 1.23 seconds
+Univariate gene enrichment analysis takes 0.16 seconds
+Bivariate gene analysis takes 0.07 seconds
+============DONE============
