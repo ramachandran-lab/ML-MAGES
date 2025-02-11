@@ -1,11 +1,10 @@
 import os
-import sys
 import time
 import numpy as np
 import pandas as pd
 import torch
-import ml_mages
 import argparse
+import _main_funcs as mf
 
 def main(args):
 
@@ -37,15 +36,15 @@ def main(args):
 
     # load input
     start_time = time.time()
-    beta, se = ml_mages.load_gwa_results(gwa_files, beta_col='BETA', se_col='SE')
+    beta, se = mf.load_gwa_results(gwa_files, beta_col='BETA', se_col='SE')
     ld_block_ids = np.loadtxt(ld_block_file, dtype=int).astype(int)
     brkpts = np.insert(ld_block_ids,0,0)
     ld_files = [os.path.join(ld_path,"example_block{}.ld".format(i_bk+1)) for i_bk in range(len(ld_block_ids))]
-    ld_list = ml_mages.load_ld_blocks(ld_files)
+    ld_list = mf.load_ld_blocks(ld_files)
     assert(sum([ld.shape[0] for ld in ld_list])==len(beta[0]))
 
     # load trained models
-    model = ml_mages.load_model(model_path,n_layer,top_r)
+    model = mf.load_model(model_path,n_layer,top_r)
     model.eval()
 
     end_time = time.time()
@@ -59,7 +58,7 @@ def main(args):
             lb, ub = brkpts[i_bk], brkpts[i_bk+1]
             # construct model input
             bhat, shat = beta[i_trait][lb:ub], se[i_trait][lb:ub]
-            X = ml_mages.construct_features(bhat, shat, ld_list[i_bk], top_r)
+            X = mf.construct_features(bhat, shat, ld_list[i_bk], top_r)
             # apply shrinkage model
             breg = model(torch.tensor(X, dtype=torch.float32)).detach().numpy().squeeze()
             beta_reg.append(breg)
@@ -69,8 +68,8 @@ def main(args):
         np.savetxt(reg_file, beta_reg, delimiter=',')
         
         # clustering
-        beta_nz, zero_cutoff = ml_mages.get_nz_effects(beta_reg, zero_cutoff=1e-3, adjust_max = 10)
-        Sigma, pi, pred_K, pred_cls = ml_mages.clustering(beta_nz, K=20, n_runs=15)
+        beta_nz, zero_cutoff = mf.get_nz_effects(beta_reg, zero_cutoff=1e-3, adjust_max = 10)
+        Sigma, pi, pred_K, pred_cls = mf.clustering(beta_nz, K=20, n_runs=15)
         cls_labels = -np.ones(len(beta_reg))
         cls_labels[np.where(np.abs(beta_reg)>zero_cutoff)[0]] = pred_cls
         # save results
@@ -80,7 +79,7 @@ def main(args):
         np.savetxt(os.path.join(output_path,"univar_{}_zc.txt".format(traits[i_trait])), np.array([zero_cutoff]), delimiter=',')
         # plot
         fig_file = os.path.join(output_path,"clustering_univar_{}.png".format(traits[i_trait]))
-        ml_mages.plot_clustering(beta_nz, pred_cls, pred_K, Sigma, pi, traits, fig_file)
+        mf.plot_clustering(beta_nz, pred_cls, pred_K, Sigma, pi, traits, fig_file)
     end_time = time.time()
     print("Shrinkage and univariate clustering take {:.2f} seconds".format(end_time - start_time))
 
@@ -93,8 +92,8 @@ def main(args):
         beta_reg = np.loadtxt(reg_file, delimiter=',')
         beta_reg_multi.append(beta_reg)
     beta_reg_multi = np.vstack(beta_reg_multi).T
-    beta_nz_multi, zero_cutoff = ml_mages.get_nz_effects(beta_reg_multi, zero_cutoff=1e-4, adjust_max = 10)
-    Sigma, pi, pred_K, pred_cls = ml_mages.clustering(beta_nz_multi, K=20, n_runs=15)
+    beta_nz_multi, zero_cutoff = mf.get_nz_effects(beta_reg_multi, zero_cutoff=1e-4, adjust_max = 10)
+    Sigma, pi, pred_K, pred_cls = mf.clustering(beta_nz_multi, K=20, n_runs=15)
     cls_labels = np.ones(beta_reg_multi.shape[0])*(-1)
     is_nz = np.any(np.abs(beta_reg_multi)>zero_cutoff, axis=1) 
     cls_labels[is_nz] = pred_cls
@@ -106,7 +105,7 @@ def main(args):
     np.savetxt(os.path.join(output_path,"multivar_{}_zc.txt".format(output_lb)), np.array([zero_cutoff]), delimiter=',')
     # plot
     fig_file = os.path.join(output_path,"clustering_multivar_{}.png".format(output_lb))
-    ml_mages.plot_clustering(beta_nz_multi, pred_cls, pred_K, Sigma, pi, traits, fig_file)
+    mf.plot_clustering(beta_nz_multi, pred_cls, pred_K, Sigma, pi, traits, fig_file)
 
     end_time = time.time()
     print("Bivariate clustering takes {:.2f} seconds".format(end_time - start_time))
@@ -134,7 +133,7 @@ def main(args):
             genes_bk = genes_bk.reset_index(drop=True)
             genes_bk.loc[:,'SNP_FIRST'] -= lb
             genes_bk.loc[:,'SNP_LAST'] -= lb
-            enrich_stats = ml_mages.enrichment_test(genes_bk, eps_eff, beta_reg[lb:ub], ld_list[i_bk])
+            enrich_stats = mf.enrichment_test(genes_bk, eps_eff, beta_reg[lb:ub], ld_list[i_bk])
             df_enrich_bk = pd.DataFrame(enrich_stats)
             df_enrich.append(pd.concat([genes_bk,df_enrich_bk],axis=1))
         df_enrich = pd.concat(df_enrich,axis=0).reset_index(drop=True)
@@ -157,7 +156,7 @@ def main(args):
     pred_K = len(Sigma)
     Sigma = [s.reshape(2,2) for s in Sigma]
     genes = pd.read_csv(gene_file)
-    df_bivar_gene = ml_mages.summarize_multivariate_gene(genes,betas,cls_lbs,pred_K)
+    df_bivar_gene = mf.summarize_multivariate_gene(genes,betas,cls_lbs,pred_K)
     # save
     df_bivar_gene.to_csv(os.path.join(output_path,"bivar_gene_{}.csv".format("-".join(traits))), index=False)
     end_time = time.time()

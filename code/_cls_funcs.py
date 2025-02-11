@@ -1,6 +1,5 @@
 import numpy as np
 import scipy as sp
-import sys
 from scipy.stats import multivariate_normal
 from collections import Counter
 import pandas as pd
@@ -34,9 +33,7 @@ def Wishart_logW(nu, L):
     """
     p = L.shape[0]
     (sign, logabsdet) = np.linalg.slogdet(L)
-    if sign<0:
-        print(sign, logabsdet)
-        sys.exit()
+    assert sign>=0, "Wishart_logW: L should be positive definite."
     L_det = sign * np.exp(logabsdet)        
     return -nu / 2 * L_det - (nu * p / 2) * np.log(2) - p * (p - 1) / 4 * np.log(np.pi) - np.sum([sp.special.loggamma((nu + 1 - i) / 2) for i in range(1, p + 1)])
 

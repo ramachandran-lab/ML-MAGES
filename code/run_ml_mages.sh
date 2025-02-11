@@ -21,7 +21,7 @@ mkdir -p ${output_path}
 mkdir -p ${output_path}/log
 
 # Run command (Python 3.9.16 is used for implementation)
-python -u run_ensemble.py \
+python -u ml_mages.py \
 --gwa_files $gwa_files \
 --traits $traits \
 --ld_path $ld_path \

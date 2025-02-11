@@ -1,11 +1,10 @@
 import os
-import sys
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from tqdm import tqdm
 from pandas_plink import read_plink
-import ml_mages
+import _main_funcs as mf
 import argparse
 import time
 
@@ -132,7 +131,7 @@ def main(args):
             gwas_res = sim.GWAS(y)
             bhat = gwas_res['BETA_HAT'].values
             shat = gwas_res['SE'].values
-            data_X = ml_mages.construct_features(bhat, shat, ld_sim, top_r)
+            data_X = mf.construct_features(bhat, shat, ld_sim, top_r)
 
             # store data
             data_sim_X.append(data_X)

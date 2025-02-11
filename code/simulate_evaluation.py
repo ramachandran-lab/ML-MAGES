@@ -1,5 +1,4 @@
 import os
-import sys
 import numpy as np
 import pandas as pd
 import scipy as sp
@@ -11,10 +10,8 @@ from functools import reduce
 import argparse
 import time
 
-import ml_mages
 import _sim_funcs as sf
 import _train_funcs as tf
-# from _sim_funcs import prepare_cov, scale_by_quantile
 
 class MultiTraitSimulator:
     def __init__(self, X, n_traits, fcg, fcs, causal_types = [], causal_types_prob = []):

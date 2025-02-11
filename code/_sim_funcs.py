@@ -12,7 +12,7 @@ from sklearn import preprocessing
 # for shrinkage using ENET
 from sklearn.linear_model import ElasticNetCV
 
-import ml_mages
+import _main_funcs as mf
 
 def prepare_cov(n_traits,n_sim_var=50, sig_thre=0.1, pcorr_thre=0.6):
     sim_cov_multi = dict()
@@ -151,7 +151,7 @@ def shrink_nn(model,scaled_obs_betas,scaled_se,chr_ld,brkpts):
             sim_ld = chr_ld[lb:ub,lb:ub]
             # normalize LD
             sim_ld = preprocessing.normalize(sim_ld)
-            data_X = ml_mages.construct_features(bhat_all[lb:ub], shat_all[lb:ub],
+            data_X = mf.construct_features(bhat_all[lb:ub], shat_all[lb:ub],
                                           sim_ld, top_r = top_r)
             breg.append(model(torch.tensor(data_X, dtype=torch.float32)).detach().numpy().squeeze())
     
@@ -355,13 +355,13 @@ def eval_uni_gene_level(btrue, breg, method, chr_ld, genes_chr, sig_threshold=0.
             zero_cutoff = 0
             beta_nz = beta_reg[np.abs(beta_reg)>0]
         else:
-            beta_nz, zero_cutoff = ml_mages.get_nz_effects(beta_reg, fold_min=200, fold_max=10, 
+            beta_nz, zero_cutoff = mf.get_nz_effects(beta_reg, fold_min=200, fold_max=10, 
                                                   zero_cutoff=1e-3, adjust_max = 10, adjust_rate = 1.5)
 
-        truncate_Sigma, truncate_pi, pred_K, pred_cls = ml_mages.clustering(beta_nz, K = 20, n_runs=25)
+        truncate_Sigma, truncate_pi, pred_K, pred_cls = mf.clustering(beta_nz, K = 20, n_runs=25)
         
         # reproduce cls labels of both zeros and non-zeros
-        breg_filtered_uni = ml_mages.threshold_vals(beta_reg, zero_cutoff=zero_cutoff)
+        breg_filtered_uni = mf.threshold_vals(beta_reg, zero_cutoff=zero_cutoff)
         cls_uni = -np.ones(beta_reg.shape[0])
         is_nz_uni = np.abs(breg_filtered_uni)>0
         cls_uni[is_nz_uni] = pred_cls
@@ -372,7 +372,7 @@ def eval_uni_gene_level(btrue, breg, method, chr_ld, genes_chr, sig_threshold=0.
         
         # enrichment analysis
         df_enrich = genes_chr.copy()
-        enrich_results = ml_mages.enrichment_test(df_enrich, epsilon_effect, beta_reg, chr_ld, use_davies=False)
+        enrich_results = mf.enrichment_test(df_enrich, epsilon_effect, beta_reg, chr_ld, use_davies=False)
         df_test = pd.DataFrame(enrich_results)
         df_enrich = pd.concat([df_enrich[df_enrich.columns[:-1]],df_test],axis=1)
     

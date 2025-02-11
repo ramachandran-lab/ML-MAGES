@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from sklearn.utils import shuffle
 
-import ml_mages
+import _main_funcs as mf
 import _train_funcs as tf
 
 
@@ -67,7 +67,7 @@ def main(args):
 
     if torch.cuda.is_available():
         print("CUDA:", torch.cuda.get_device_name(0))
-    n_features = ml_mages.get_n_features(top_r)
+    n_features = mf.get_n_features(top_r)
     feature_lb = "top{}".format(top_r)
 
     # load data
@@ -87,7 +87,7 @@ def main(args):
     X_val, y_val, y_val_scale = tf.scale_and_subset(X_test,y_test, beta_real, se_real, max_r, top_r, scale=1, asymmetric=False)
 
     # build model
-    model = ml_mages.construct_new_model(n_layer,n_features,feature_lb)
+    model = mf.construct_new_model(n_layer,n_features,feature_lb)
     print(model)
     n_param = 0
     for W in model.parameters():
@@ -180,7 +180,7 @@ def main(args):
     best_epoch = np.argsort(np.array(losses)[:,1])[0]
     print("Epoch with best performance:",best_epoch)
     
-    model = ml_mages.construct_new_model(n_layer,n_features,feature_lb)
+    model = mf.construct_new_model(n_layer,n_features,feature_lb)
     model_path = os.path.join(epoch_path,"epoch{}".format(best_epoch))
     state = torch.load(model_path)
     model.load_state_dict(state)
