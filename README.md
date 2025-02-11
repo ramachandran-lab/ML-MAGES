@@ -1,4 +1,5 @@
 # ML-MAGES
+Updated: 2/11/2025
 
 This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate
 genetic association analyses with genes and effect size shrinkage__.
@@ -15,8 +16,43 @@ All required packages are listed in [`requirements.txt`](requirements.txt). For 
 python -m venv ml-mages-env  # Create virtual environment
 source ml-mages-env/bin/activate  # Activate (Linux/Mac)
 pip install -r requirements.txt  # Install dependencies
-```  
+```
+Alternatively,
+```bash
+conda create -n ml-mages-env python=3.9
+conda activate ml-mages-env
+pip install -r requirements.txt  # Install dependencies
+```
 This isolates the tool's dependencies from system-wide Python installations, avoiding potential dependency incompatibilities and version conflicts.  
+
+## Quick Start (TODO)
+* Install required Python packages if not already [`requirements.txt`](requirements.txt).
+* Clone this repository to your local directory.
+* The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
+* To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`.
+* To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included), follow the commands in `run_ensemble.sh`.
+* To run the method with ensemble of pre-trained models on your own data,
+   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#data-for-running-the-full-method-with-ensembled-models-not-included) for detailed data contents).
+   * Format the data as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details).
+   * Then run the command
+   ```bash
+   python -u run_ensemble.py \
+   --gwa_files $gwa_files \
+   --traits $traits \
+   --ld_path $ld_path \
+   --ld_block_file $ld_block_file \
+   --gene_file $gene_file \
+   --model_path $model_path \
+   --n_layer $n_layer \
+   --top_r $top_r \
+   --output_path $output_path 
+   ```
+* To preprocess LD data (and optionally GWA results) (of each individual chromosome), follow [`split_and_process_ld.sh`](code/`split_and_process_ld.sh`).
+* To train your own shrinkage models, follow [`simulate_train.sh`](code/simulate_train.sh) to generate synthetic data and [`train_model.sh`](code/train_model.sh) to train the models.
+* To generate new synthetic data for performance evaluation, follow [`simulate_evaluation.sh`](code/simulate_evaluation.sh).
+* [`demo_visualize_outputs.ipynb`](demo_visualize_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
+* [`demo_evaluate_perf.ipynb`](demo_evaluate_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
+
 
 ## Repository Structure  
 
@@ -74,34 +110,6 @@ ML-MAGES/
 
 ---
 
-## Quick Start (TODO)
-
-* Example data is provided in the folder `example_data`, which can be run using the code in `run_single_example.sh`. 
-* The folder `data` is only partially available, with selected files available to illustrate the file formats. The full data are not included in the repository due to file size restriction. These data are available upon request.
-* The folder `output` is leftout. 
-
-#### Quick Start:
-* We highly recommend create a Python virtual enviroment for using this tool to avoid any potential incompatiblity in dependencies.
-* Install required Python packages (see `Python_packages.txt`).
-* Clone this repository to your local directory.
-* The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
-* To run the method on sample data, follow the commands in `run_sample.sh` and `run_ensemble.sh`.
-* To run the method with pre-trained models on your own data, pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#data-for-running-the-full-method-with-ensembled-models-not-included) for detailed data contents). Format the data as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details). Then run the command
-```bash
-python -u run_ensemble.py \
---gwa_files $gwa_files \
---traits $traits \
---ld_path $ld_path \
---ld_block_file $ld_block_file \
---gene_file $gene_file \
---model_path $model_path \
---n_layer $n_layer \
---top_r $top_r \
---output_path $output_path 
-```
-* To use your own shrinkage models, follow `simulate_train.sh` to generate synthetic data and `train_model.sh` to train the models.
-* To visualize multi-trait analysis results, `demo_visualize_outputs.ipynb` provides an example.
-* To generate new synthetic data for performance evaluation, follow `simulate_evaluation.sh`. The notebook `evaluate_perf.ipynb` provides an example for performance evaluation using the synthetic data.
 
 ## Code Folder
 
