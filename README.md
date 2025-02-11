@@ -26,9 +26,12 @@ pip install -r requirements.txt  # Install dependencies
 This isolates the tool's dependencies from system-wide Python installations, avoiding potential dependency incompatibilities and version conflicts.  
 
 ## Quick Start 
-* Install required Python packages if not already [`requirements.txt`](requirements.txt).
+* Install required Python packages if not already (see [`requirements.txt`](requirements.txt)).
 * Clone this repository to your local directory.
-* The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
+  ```bash
+  git clone https://github.com/ramachandran-lab/ML-MAGES.git
+  ```
+* The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided that you update all the file paths accordingly.
 * To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`. After defining all input arguments, run
   ```bash
    python -u run_single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
