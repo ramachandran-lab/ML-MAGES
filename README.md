@@ -105,8 +105,51 @@ ML-MAGES/
 ---
 
 ## Functions (TODO)
-* run_single_example
-* run_ml_mages
+* **`single_example.py`**
+
+  - run the core ML-MAGES workflow for a single model on example data.  
+  
+  - **Usage**:  
+  ```bash
+   python -u single_example.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --gwa_files      Path to GWAS summary statistics files (CSV format), with multiple traits separated by comma
+    --traits         Names of traits to be analyzed, with multiple traits separated by comma (should match the gwa_files)
+    --ld_path        Directory containing LD matrix blocks
+    --ld_block_file  Path to the file containing boundary indices of LD blocks 
+    --gene_file      Path to the gene information file (CSV format)
+    --model_path     Directory containing pre-trained models
+    --n_layer        Number of layers in the model architecture (chosen from {2,3})
+    --top_r          Number of top (highest correlation) variants used to construct the features (chosen from {5,10,15})
+    --output_path    Path to save analysis results  
+    ```
+  
+  - **Outputs**:  
+    ```text
+    example_output/
+    ├── regularized_effects_TRAIT.txt,                                    # shrinkage results for each trait
+    ├── univar_TRAIT_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt             # univariate clustering results for each trait
+    ├── enrichment_TRAIT.csv                                              # univariate gene enrichment results for each trait
+    ├── multivar_TRAIT1-TRAIT2_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt   # multivariate clustering results for traits 1 and 2
+    ├── bivar_gene_TRAIT1-TRAIT2.csv  # bivariate gene anlaysis results for traits 1 and 2
+    ├── clustering_univar/multivar_*.png                                  # visualization of clustering results
+    └── single_example.log                                                # Runtime command-line output 
+    ```
+  
+  - **Example Configuration** (from `run_single_example.sh`):  
+    ```bash
+    python -u single_example.py \
+    --gwa_files $gwa_files --traits $traits \
+    --ld_path $ld_path  --ld_block_file $ld_block_file \
+    --gene_file $gene_file \
+    --model_path $model_path  --n_layer $n_layer  --top_r $top_r \
+    --output_path $output_path
+    ```
+
+* **`ml_mages.py`**
 
   Input Requirements  
   1. **LD Blocks** (`data/block_ld/`):  
