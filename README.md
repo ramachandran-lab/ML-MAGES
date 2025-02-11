@@ -91,7 +91,7 @@ ML-MAGES/
 │   ├── gwa/                     # GWAS files (gwas_TRAIT.csv)
 │   └── genelist.csv             # Gene metadata
 │
-└── output/                      # (Empty by default: analysis results directory)
+└── output/                      # (Empty by default: Outputs from run_ml_mages.sh)
 ```
 
 ### Key Components  
