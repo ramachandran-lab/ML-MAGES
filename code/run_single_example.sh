@@ -26,7 +26,7 @@ mkdir -p $output_path
 log_file=${output_path}/single_example.log
     
 # Run command (Python 3.9.16 is used for implementation)
-python -u run_single_example.py \
+python -u single_example.py \
 --gwa_files $gwa_files \
 --traits $traits \
 --ld_path $ld_path \
