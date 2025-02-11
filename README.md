@@ -1,14 +1,88 @@
 # ML-MAGES
 
-This folder contains sample data and code for __*ML-MAGES*: A machine learning framework for multivariate
+This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate
 genetic association analyses with genes and effect size shrinkage__.
 
-Python 3.9.16 is used for implementing the method. A list of Python packages used for the implementation is included in the file `Python_packages.txt`. 
 
-*Sample data is provided in the folder `sample_data`, which can be run using the code in `run_sample.sh`. The folders `data` and `output` for running the method on genotyped data are not included in the repository due to file size and accessibility restriction. These data are available upon request.*
+## Requirements  
+The method is implemented in *Python 3.9.16*. 
+
+While basic Python familiarity is required, users only need minimal scripting experience to run the provided workflows.  
+
+### Dependency Management  
+All required packages are listed in [`requirements.txt`](requirements.txt). For reproducibility, we **strongly recommend** creating a Python virtual environment when using this tool:  
+```bash
+python -m venv ml-mages-env  # Create virtual environment
+source ml-mages-env/bin/activate  # Activate (Linux/Mac)
+pip install -r requirements.txt  # Install dependencies
+```  
+This isolates the tool's dependencies from system-wide Python installations, avoiding potential dependency incompatibilities and version conflicts.  
+
+## Repository Structure  
+
+```text
+ML-MAGES/
+├── code/                   
+│   ├── ml_mages.py              # Core ML-MAGES algorithm implementation
+│   ├── _cls_funcs.py            # Clustering utilities
+│   ├── _train_funcs.py          # Model training components
+│   ├── _enrich_funcs.py         # Enrichment analysis alternatives
+│   ├── _sim_funcs.py            # Synthetic data generation
+│   ├── run_single_example.sh    # Single model on example data demo
+│   ├── run_ensemble.sh          # Ensemble models on real data demo
+│   ├── train_model.sh           # Model training script
+│   └── evaluate_perf.ipynb      # Performance evaluation notebook
+│
+├── example_data/                
+│   ├── example_gwa_HDL.txt      # Example GWAS results (HDL)
+│   ├── example_gwa_LDL.txt      # Example GWAS results (LDL)
+│   ├── example_block*.ld        # LD matrices (blocks 1-2)
+│   └── block_brkpts.txt         # LD block boundaries (only the right boundary for each block)
+│
+├── trained_model/          
+│   ├── genotyped_models/        # Models trained using synthetic data based on genotype data
+│   └── imputed_models/          # Models trained using synthetic data based on imputation data
+│
+├── example_output/              # Outputs from run_single_example.sh
+│
+├── data/                        # (Part of this folder's contents are left out for file size restriction)
+│   ├── block_ld/                # LD block matrices
+│   ├── gwa/                     # GWAS files (gwas_TRAIT.csv)
+│   └── genelist.csv             # Gene metadata
+│
+└── output/                      # (Empty by default: analysis results directory)
+```
+
+### Key Components  
+| File/Directory             | Purpose                                       |
+|----------------------------|-----------------------------------------------|
+| `run_single_example.sh`    | Demo pipeline for running a single model      |
+| `run_ensemble.sh`          | Demo pipeline for running ensemble models     |
+| `example_data/`            | Contains data used for `run_single_example.sh`|
+| `trained_model/`           | Pre-trained effect shrinkage models           |
+
+### Input Requirements  
+1. **LD Blocks** (`data/block_ld/`):  
+   - Files: `block_0.ld`, `block_1.ld`, etc.  
+   - Metadata: `block_ids.txt` (required), `blocks_meta.csv` (optional)  
+
+2. **GWAS Data** (`data/gwa/`):  
+   - Format: `gwas_[TRAIT].csv` with `BETA`, `SE`, `CHR` columns  
+
+3. **Gene Metadata** (`data/genelist.csv`):  
+   - Required columns: `CHR`, `GENE`, `START`, `END`, `SNP_FIRST`, `SNP_LAST`  
+
+---
+
+## Quick Start (TODO)
+
+* Example data is provided in the folder `example_data`, which can be run using the code in `run_single_example.sh`. 
+* The folder `data` is only partially available, with selected files available to illustrate the file formats. The full data are not included in the repository due to file size restriction. These data are available upon request.
+* The folder `output` is leftout. 
 
 #### Quick Start:
-* Install Python packages as needed.
+* We highly recommend create a Python virtual enviroment for using this tool to avoid any potential incompatiblity in dependencies.
+* Install required Python packages (see `Python_packages.txt`).
 * Clone this repository to your local directory.
 * The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
 * To run the method on sample data, follow the commands in `run_sample.sh` and `run_ensemble.sh`.
