@@ -1,5 +1,5 @@
 # ML-MAGES
-Updated: 2/11/2025
+Last Updated: 2/11/2025
 
 This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate
 genetic association analyses with genes and effect size shrinkage__.
@@ -36,12 +36,12 @@ This isolates the tool's dependencies from system-wide Python installations, avo
   ```bash
    python -u run_single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
   ```
-* **[Recommended]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in `run_ensemble.sh`.
+* **[Recommended]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in `run_ml_mages.sh`.
    * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#TODO) for detailed data contents).
-   * Format the data as required by the input arguments for `run_ensemble.py` (see [below](#TODO) for details).
+   * Format the data as required by the input arguments for `ml_mages.py` (see [below](#TODO) for details).
    * Then run the command
    ```bash
-   python -u run_ensemble.py \
+   python -u ml_mages.py \
    --gwa_files $gwa_files --traits $traits \
    --ld_path $ld_path --ld_block_file $ld_block_file \
    --gene_file $gene_file \
@@ -65,7 +65,7 @@ ML-MAGES/
 │   ├── _enrich_funcs.py         # Utility function for enrichment analysis alternatives, specifically to replace the default enrichment test if installation of the required package 'chiscore' fails.
 │   ├── _sim_funcs.py            # Utility functions for synthetic data generation and performance evaluation
 │   ├── run_single_example.sh    # Single model on example data demo
-│   ├── run_ensemble.sh          # Ensemble models on real data demo
+│   ├── run_ml_mages.sh          # Ensemble models on real data demo
 │   ├── split_and_process_ld.sh  # LD splitting and pre-processing script
 │   ├── train_model.sh           # Model training script
 │   ├── simulate_train.sh        # Synthetic data generation (for training) script
@@ -98,7 +98,7 @@ ML-MAGES/
 | File/Directory             | Purpose                                       |
 |----------------------------|-----------------------------------------------|
 | `run_single_example.sh`    | Demo pipeline for running a single model      |
-| `run_ensemble.sh`          | Demo pipeline for running ensemble models     |
+| `run_ml_mages.sh`          | Demo pipeline for running ensemble models     |
 | `example_data/`            | Contains data used for `run_single_example.sh`|
 | `trained_model/`           | Pre-trained effect shrinkage models           |
 
@@ -106,7 +106,7 @@ ML-MAGES/
 
 ## Functions (TODO)
 * run_single_example
-* run_ensemble
+* run_ml_mages
 
   Input Requirements  
   1. **LD Blocks** (`data/block_ld/`):  
@@ -141,13 +141,13 @@ The `example_data` folder in this repository contains the following files:
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
 ### Data folder (real data for running the full method with ensembled models)
-Input data files to `run_ensemble.py` are not included due to large file sizes. The following files (as used in `run_ensemble.sh`) are needed:
+Input data files to `ml_mages.py` are not included due to large file sizes. The following files (as used in `run_ml_mages.sh`) are needed:
 
 - The `data/block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
   - The full LD of split segments along all the chromosomes, ordered by chromosome and position, are saved in x files labeled as `block_0.ld`, `block_1.ld`, to `block_x.ld`, each being a comma-delimited matrix. 
   - The file `block_ids.txt` contains x lines, where each line is the index of the last variant in the corresponding block **plus one**. Indices go from 0 to M-1, where M is the total number of variants along all the chromosomes. For instance, if `block_0.ld` is of size 200x200 and `block_1.ld` is of size 210x210, then the first two lines in `block_ids.txt` should be 200 and 410.
   - [Optional] The file `blocks_meta.csv` is a comma-delimited file with three columns: 'block_id', 'chr', 'id_in_chr', and x rows (excluding the header).  The three columns correspond to the block index (as used in the `.ld` file names), the chromosome to which the block belongs, and the index of the block within that chromosome. For instance, a row of `405,15,0` means the `block_405.ld` is the first (indexed by 0) block in CHR15. 
-- The `data/gwa` folder contains GWA result files, labeled as `gwas_TRAIT.csv` where `TRAIT` is the trait name and should be the same as the one used for argument `traits` in the input to `run_ensemble.py`. The file for each trait should have exactly M lines excluding the header, with each line corresponds to a variant, and all variants ordered the same as those in LD blocks. There should be at least three columns: 'BETA','SE', and 'CHR'.
+- The `data/gwa` folder contains GWA result files, labeled as `gwas_TRAIT.csv` where `TRAIT` is the trait name and should be the same as the one used for argument `traits` in the input to `ml_mages.py`. The file for each trait should have exactly M lines excluding the header, with each line corresponds to a variant, and all variants ordered the same as those in LD blocks. There should be at least three columns: 'BETA','SE', and 'CHR'.
   - 'BETA': the estimated GWA effect of the variant
   - 'SE': the standard error of the estimated effect
   - 'CHR': chromosome of the variant 
@@ -174,12 +174,12 @@ The `trained_model` folder in this repository contains trained models.
 
 The subfolder `genotyped_simulated_training` contains the six models, each of a different architecture, trained using genotyped-data-based simulation described in the paper. We do not provide the simulated training data, but simulation and training can be performed following steps described in appendix. 
 
-The subfolder `imputed_simulated_training` contains two set of models, each with 10 models of a same architecture, trained using imputed-data-based simulation. The output of each set of models are averaged to generate an ensemble result of shrinkage, as used in the `run_ensemble.py`. Similarly, simulation and training can be performed following steps described in appendix. 
+The subfolder `imputed_simulated_training` contains two set of models, each with 10 models of a same architecture, trained using imputed-data-based simulation. The output of each set of models are averaged to generate an ensemble result of shrinkage, as used in the `ml_mages.py`. Similarly, simulation and training can be performed following steps described in appendix. 
   * The model files are named as ''Fc*a*top*b*_*c*.model'', where *a* is the number of fully-connected layers in the neural network model, *b* is the number of top variants used to construct the features, and *c* is the index of the model among all models of the same architecture.
 
-## Input arguments for `run_ensemble.py`
+## Input arguments for `ml_mages.py`
 
-The main function `run_ensemble.py` takes in 9 input arguments. These arguments are required for running the script and performing *ML-MAGES* on the given data:
+The main function `ml_mages.py` takes in 9 input arguments. These arguments are required for running the script and performing *ML-MAGES* on the given data:
 
 - `--gwa_files`: A comma-separated list of GWA files. These files contain the GWA results for different traits. E.g., `../data/gwa/gwas_MCV.csv,../data/gwa/gwas_MPV.csv,../data/gwa/gwas_PLC.csv`.
 
@@ -199,9 +199,9 @@ The main function `run_ensemble.py` takes in 9 input arguments. These arguments 
 
 - `--output_path`: The path to save the output files. All output files generated by the *ML-MAGES* will be saved in this directory.
 
-## Output of `run_ensemble.py`
+## Output of `ml_mages.py`
 
-The script `run_ensemble.py` outputs several files to the `output_path` folder specified. Suppose two traits are analyzed, X and Y. The output files in this folder include:
+The script `ml_mages.py` outputs several files to the `output_path` folder specified. Suppose two traits are analyzed, X and Y. The output files in this folder include:
 
 1. Shrinkage results:
    * `regularized_effects_X.txt`
