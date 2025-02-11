@@ -86,7 +86,7 @@ ML-MAGES/
 │
 ├── example_output/              # Outputs from run_single_example.sh
 │
-├── data/                        # (Part of this folder's contents are left out for file size restriction)
+├── data/                        # (Selected files in this folder have been omitted to restrict size.)
 │   ├── block_ld/                # LD block matrices
 │   ├── gwa/                     # GWAS files (gwas_TRAIT.csv)
 │   └── genelist.csv             # Gene metadata
@@ -131,17 +131,16 @@ ML-MAGES/
 
 
 ## Data
-### Example data folder (toy data for running a single model)
-The `example_data` folder in this repository contains the following files:
-
-- `example_gwa_HDL.txt` and `example_gwa_LDL.txt`: These files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL) .
-- `example_block*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank.
-- `block_brkpts.txt`: This file contains the (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. 
-- `example_genelist`: This file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it. 
+### Contents of ``example_data`` folder
+The `example_data` folder in this repository contains the toy data for running a single model:
+- `example_gwa_HDL.csv` and `example_gwa_LDL.csv`: These comma-delimited csv files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL). **Required columns for GWA result files include ``BETA`` for GWA effect and ``SE`` for standard error.**
+- `example_block*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank. **The matrix is comma-delimited.** 
+- `block_brkpts.txt`: This file contains (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. **Only the right boundaries are included, with one index on each line.** For instance, two indices ``851 1818`` indicate that the LD is split into blocks that should be indexed by ``[0:851]`` and ``[851:1818]``. Note that in Python indexing ``[start:end]``, the ``start`` index is inclusive, while the ``end`` index is exclusive
+- `example_genelist`: This comma-delimited csv file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it (**columns ``SNP_FIRST`` and ``SNP_LAST``, required**), as well as its choromosome (``CHR``), its name (``GENE``), and the number of variants considered in this gene (``N_SNPS``).
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
-### Data folder (real data for running the full method with ensembled models)
-Input data files to `ml_mages.py` are not included due to large file sizes. The following files (as used in `run_ml_mages.sh`) are needed:
+### Contents of ``data`` folder
+The `data` folder in this repository contains real data for running the full method with ensembled models, i.e., input data files to used in `run_ml_mages.sh`. However, only selected data is included in this repository due to storage limitations and privacy concerns for sensitive individual-level genetic data. The following files are required for analysis:
 
 - The `data/block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
   - The full LD of split segments along all the chromosomes, ordered by chromosome and position, are saved in x files labeled as `block_0.ld`, `block_1.ld`, to `block_x.ld`, each being a comma-delimited matrix. 
