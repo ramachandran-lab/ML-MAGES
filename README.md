@@ -17,7 +17,7 @@ python -m venv ml-mages-env  # Create virtual environment
 source ml-mages-env/bin/activate  # Activate (Linux/Mac)
 pip install -r requirements.txt  # Install dependencies
 ```
-Alternatively,
+Alternatively, if using Conda,
 ```bash
 conda create -n ml-mages-env python=3.9
 conda activate ml-mages-env
@@ -25,49 +25,51 @@ pip install -r requirements.txt  # Install dependencies
 ```
 This isolates the tool's dependencies from system-wide Python installations, avoiding potential dependency incompatibilities and version conflicts.  
 
-## Quick Start (TODO)
+## Quick Start 
 * Install required Python packages if not already [`requirements.txt`](requirements.txt).
 * Clone this repository to your local directory.
 * The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided you update the file paths accordingly.
-* To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`.
-* To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included), follow the commands in `run_ensemble.sh`.
-* To run the method with ensemble of pre-trained models on your own data,
-   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#data-for-running-the-full-method-with-ensembled-models-not-included) for detailed data contents).
-   * Format the data as required by the input arguments for `run_ensemble.py` (see [below](#input-arguments-for-run_ensemblepy) for details).
+* To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`. After defining all input arguments, run
+  ```bash
+   python -u run_single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
+  ```
+* **[Recommended]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in `run_ensemble.sh`.
+   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#TODO) for detailed data contents).
+   * Format the data as required by the input arguments for `run_ensemble.py` (see [below](#TODO) for details).
    * Then run the command
    ```bash
    python -u run_ensemble.py \
-   --gwa_files $gwa_files \
-   --traits $traits \
-   --ld_path $ld_path \
-   --ld_block_file $ld_block_file \
+   --gwa_files $gwa_files --traits $traits \
+   --ld_path $ld_path --ld_block_file $ld_block_file \
    --gene_file $gene_file \
-   --model_path $model_path \
-   --n_layer $n_layer \
-   --top_r $top_r \
+   --model_path $model_path --n_layer $n_layer --top_r $top_r \
    --output_path $output_path 
    ```
 * To preprocess LD data (and optionally GWA results) (of each individual chromosome), follow [`split_and_process_ld.sh`](code/`split_and_process_ld.sh`).
 * To train your own shrinkage models, follow [`simulate_train.sh`](code/simulate_train.sh) to generate synthetic data and [`train_model.sh`](code/train_model.sh) to train the models.
 * To generate new synthetic data for performance evaluation, follow [`simulate_evaluation.sh`](code/simulate_evaluation.sh).
-* [`demo_visualize_outputs.ipynb`](demo_visualize_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
-* [`demo_evaluate_perf.ipynb`](demo_evaluate_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
-
+* [`demo_vis_outputs.ipynb`](demo_vis_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
+* [`demo_eval_perf.ipynb`](demo_eval_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
 
 ## Repository Structure  
 
 ```text
 ML-MAGES/
 ├── code/                   
-│   ├── ml_mages.py              # Core ML-MAGES algorithm implementation
-│   ├── _cls_funcs.py            # Clustering utilities
-│   ├── _train_funcs.py          # Model training components
-│   ├── _enrich_funcs.py         # Enrichment analysis alternatives
-│   ├── _sim_funcs.py            # Synthetic data generation
+│   ├── ml_mages.py              # Core ML-MAGES function and utility functions
+│   ├── _cls_funcs.py            # Utility functions for clustering
+│   ├── _train_funcs.py          # Utility functions for model training 
+│   ├── _enrich_funcs.py         # Utility function for enrichment analysis alternatives, specifically to replace the default enrichment test if installation of the required package 'chiscore' fails.
+│   ├── _sim_funcs.py            # Utility functions for synthetic data generation and performance evaluation
 │   ├── run_single_example.sh    # Single model on example data demo
 │   ├── run_ensemble.sh          # Ensemble models on real data demo
+│   ├── split_and_process_ld.sh  # LD splitting and pre-processing script
 │   ├── train_model.sh           # Model training script
-│   └── evaluate_perf.ipynb      # Performance evaluation notebook
+│   ├── simulate_train.sh        # Synthetic data generation (for training) script
+│   ├── train_model.sh           # Model training script
+│   ├── simulate_evaluation.sh   # Synthetic data generation (for evaluation) script
+│   ├── demo_vis_outputs.ipynb   # Result visualization notebook
+│   └── demo_eval_perf.ipynb     # Performance evaluation notebook
 │
 ├── example_data/                
 │   ├── example_gwa_HDL.txt      # Example GWAS results (HDL)
@@ -97,65 +99,45 @@ ML-MAGES/
 | `example_data/`            | Contains data used for `run_single_example.sh`|
 | `trained_model/`           | Pre-trained effect shrinkage models           |
 
-### Input Requirements  
-1. **LD Blocks** (`data/block_ld/`):  
-   - Files: `block_0.ld`, `block_1.ld`, etc.  
-   - Metadata: `block_ids.txt` (required), `blocks_meta.csv` (optional)  
-
-2. **GWAS Data** (`data/gwa/`):  
-   - Format: `gwas_[TRAIT].csv` with `BETA`, `SE`, `CHR` columns  
-
-3. **Gene Metadata** (`data/genelist.csv`):  
-   - Required columns: `CHR`, `GENE`, `START`, `END`, `SNP_FIRST`, `SNP_LAST`  
-
 ---
 
+## Functions (TODO)
+* run_single_example
+* run_ensemble
 
-## Code Folder
-
-The `code` folder in this repository contains the following files:
-
-**Main functions:**
-- `ml_mages.py`: This file includes implemented functions for each step of the method.
-- `_cls_funcs.py`: This file contains utility functions for the clustering algorithm.
-- `_train_funcs.py`: This file contains functions for training the models.
-- `_enrich_funcs.py`: This file contains functions to replace the default enrichment test function if the installation of the required package *chiscore* fails.
-- `_sim_funcs.py`: This file contains functions for simulating data for performance evaluation as well as evaluating the performance using the simulated data.
-
-**Run the method using a single trained model for effect size shrinkage on sample data:**
-- `run_sample.sh`: This file contains the bash script with the command to run the Python code file for the sample data, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
-- `run_sample.py`: This file contains the code to apply the method on sample data.
-
-**Run the full method using ensemble learning on multiple trained models for effect size shrinkage on genotype data (not included):**  
-- `run_ensemble.sh`: This file contains the bash script with the command to run the Python code file for the full genotyped data (not included) using ensembled models, including a brief description of all the input arguments. The script need to be run from the `code` folder, or input paths in the bash file need to be updated. 
-- `run_ensemble.py`: This file contains the code to apply the method on the full genotyped data (not included).
-
-**Additional files for simulating training data and training models from scratch:**  
-- `train_model.sh`: This file contains the bash script with the command to run the Python code file for training the models for effect size shrinkage based on the full genotyped data (not included).
-- `train_model.py`: This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
-- `simulate_train.sh`: This file contains the bash script with the command to run the Python code file for simulating effects for pseudo-traits based on real genotyped data and LD (not included), which are used for training the models.
-- `simulate_train.py`: This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
-
-  **Additional files for simulating evluation data:**  
-- `simulate_evaluation.sh`: This file contains the bash script with the command to run the Python code file for simulating synthetic traits based on real genotyped data and LD (not included), which are used for evaluting the performances. 
-- `simulate_evaluation.py`: This file contains the code to simulate synthetic traits for performance evluation based on real genotyped data and LD (not included). Multiple traits with various association relationships can be simulated.
+  Input Requirements  
+  1. **LD Blocks** (`data/block_ld/`):  
+     - Files: `block_0.ld`, `block_1.ld`, etc.  
+     - Metadata: `block_ids.txt` (required), `blocks_meta.csv` (optional)  
   
-**Additional files for visualizing results and comparing performances:** 
+  2. **GWAS Data** (`data/gwa/`):  
+     - Format: `gwas_[TRAIT].csv` with `BETA`, `SE`, `CHR` columns  
+  
+  3. **Gene Metadata** (`data/genelist.csv`):  
+     - Required columns: `CHR`, `GENE`, `START`, `END`, `SNP_FIRST`, `SNP_LAST`  
+* split_ld_blocks
+* process_ld_blocks_and_gwa
+* simulate_train # This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
+* train_model # This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
+* simulate_evaluation # This file contains the code to simulate synthetic traits for performance evluation based on real genotyped data and LD (not included). Multiple traits with various association relationships can be simulated.
+
+  
+### Additional notebook files for visualizing results and comparing performances:
 - `demo_visualize_outputs.ipynb`: This Jupyter notebook demonstrates how to visualize and analyze gene-level output for multi-trait analyses.
 - `evaluate_perf.ipynb`: This Jupyter notebook demonstrates how to evaluate the performances of the methods using the simulated data.
 
 
-## Data Folder
-### Sample data
-The `sample_data` folder in this repository contains the following files:
+## Data
+### Example data folder (toy data for running a single model)
+The `example_data` folder in this repository contains the following files:
 
-- `sample_gwa_HDL.txt` and `sample_gwa_LDL.txt`: These files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL) .
-- `sample_block1.ld` and `sample_block2.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank.
-- `block_ids.txt`: This file contains the (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. 
-- `sample_genelist`: This file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it. 
+- `example_gwa_HDL.txt` and `example_gwa_LDL.txt`: These files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL) .
+- `example_block*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank.
+- `block_brkpts.txt`: This file contains the (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. 
+- `example_genelist`: This file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it. 
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
-### Data for running the full method with ensembled models (not included)
+### Data folder (real data for running the full method with ensembled models)
 Input data files to `run_ensemble.py` are not included due to large file sizes. The following files (as used in `run_ensemble.sh`) are needed:
 
 - The `data/block_ld` folder contains LD data. Suppose there are a total of x LD blocks, then this folder should contain x+1 files, optionally with additional files for reference. 
@@ -184,7 +166,7 @@ The simulated training data will be included in the folder `data/simulation` (no
 
 The simulated evluation data will be included in the folder `data/simulation/sim_gene_mlmt` (not shown), and subsequently used for performance evaluation.
 
-## Model Folder
+## Models
 The `trained_model` folder in this repository contains trained models. 
 
 The subfolder `genotyped_simulated_training` contains the six models, each of a different architecture, trained using genotyped-data-based simulation described in the paper. We do not provide the simulated training data, but simulation and training can be performed following steps described in appendix. 
@@ -266,6 +248,6 @@ Users may generate other visualizations or perform downstream analyses using the
 ----
 **Citation**
 
-Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
+[1] Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
 
 For questions and comments, please contact Xiran Liu at *xiran_liu1 at brown dot edu*.
