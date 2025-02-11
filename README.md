@@ -32,12 +32,12 @@ This isolates the tool's dependencies from system-wide Python installations, avo
   git clone https://github.com/ramachandran-lab/ML-MAGES.git
   ```
 * The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided that you update all the file paths accordingly.
-* To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`. After defining all input arguments, run
+* To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in [`run_single_example.sh`](code/run_single_example.sh). After defining all input arguments, run
   ```bash
    python -u single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
   ```
-* **[Recommended]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in `run_ml_mages.sh`.
-   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#TODO) for detailed data contents).
+* **[Main]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in [`run_ml_mages.sh`](code/run_ml_mages.sh).
+   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the gene annotation metadata file (see [below](#TODO) for detailed data contents).
    * Format the data as required by the input arguments for `ml_mages.py` (see [below](#TODO) for details).
    * Then run the command
    ```bash
@@ -104,10 +104,10 @@ ML-MAGES/
 
 ---
 
-## Functions (TODO)
+## Usage of Functions
 * **`single_example.py`**
 
-  - run the core ML-MAGES workflow for a single model on example data.  
+  - Run the core ML-MAGES workflow for a single model on example data.  
   
   - **Usage**:  
   ```bash
@@ -116,15 +116,15 @@ ML-MAGES/
   
   - **Required Arguments**:  
     ```text
-    --gwa_files      Path to GWAS summary statistics files (CSV format), with multiple traits separated by comma
-    --traits         Names of traits to be analyzed, with multiple traits separated by comma (should match the gwa_files)
-    --ld_path        Directory containing LD matrix blocks
-    --ld_block_file  Path to the file containing boundary indices of LD blocks 
-    --gene_file      Path to the gene information file (CSV format)
-    --model_path     Directory containing pre-trained models
-    --n_layer        Number of layers in the model architecture (chosen from {2,3})
-    --top_r          Number of top (highest correlation) variants used to construct the features (chosen from {5,10,15})
-    --output_path    Path to save analysis results  
+    --gwa_files      Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --traits         Names of traits corresponding to gwa_files, separated by comma
+    --ld_path        Directory containing LD matrix blocks (block_0.ld, block_1.ld, etc.)
+    --ld_block_file  Path to LD block boundary indices file
+    --gene_file      Path to gene annotation metadata file (CSV format)
+    --model_path     Directory containing pre-trained shrinkage models
+    --n_layer        Model architecture configuration (chosen from {2,3})
+    --top_r          Number of top variants for feature construction (choices: {5,10,15})
+    --output_path    Path to save analysis results 
     ```
   
   - **Outputs**:  
@@ -134,9 +134,8 @@ ML-MAGES/
     ├── univar_TRAIT_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt             # univariate clustering results for each trait
     ├── enrichment_TRAIT.csv                                              # univariate gene enrichment results for each trait
     ├── multivar_TRAIT1-TRAIT2_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt   # multivariate clustering results for traits 1 and 2
-    ├── bivar_gene_TRAIT1-TRAIT2.csv  # bivariate gene anlaysis results for traits 1 and 2
-    ├── clustering_univar/multivar_*.png                                  # visualization of clustering results
-    └── single_example.log                                                # Runtime command-line output 
+    ├── bivar_gene_TRAIT1-TRAIT2.csv                                      # bivariate gene anlaysis results for traits 1 and 2
+    └── clustering_*.png                                                  # visualization of clustering results (up to bivariate)
     ```
   
   - **Example Configuration** (from `run_single_example.sh`):  
@@ -151,7 +150,139 @@ ML-MAGES/
 
 * **`ml_mages.py`**
 
-  Input Requirements  
+  - Run the core ML-MAGES workflow for ensemble models on real data. 
+  
+  - **Usage**:  
+  ```bash
+  python -u ml_mages.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --gwa_files      Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --traits         Names of traits corresponding to gwa_files, separated by comma
+    --ld_path        Directory containing LD matrix blocks (block_0.ld, block_1.ld, etc.)
+    --ld_block_file  Path to LD block boundary indices file
+    --gene_file      Path to gene annotation metadata file (CSV format)
+    --model_path     Directory containing pre-trained shrinkage models
+    --n_layer        Model architecture configuration (chosen from {2,3})
+    --top_r          Number of top variants for feature construction (choices: {5,10,15})
+    --output_path    Path to save analysis results 
+    ```
+
+  - **Outputs**:  
+    ```text
+    output/OUTPUT_PATH
+    ├── regularized_effects_TRAIT.txt,                                    # shrinkage results for each trait
+    ├── univar_TRAIT_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt             # univariate clustering results for each trait
+    ├── enrichment_TRAIT.csv                                              # univariate gene enrichment results for each trait
+    ├── multivar_TRAIT1-TRAIT2_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt   # multivariate clustering results for traits 1 and 2
+    ├── bivar_gene_TRAIT1-TRAIT2.csv                                      # bivariate gene anlaysis results for traits 1 and 2
+    └── clustering_*.png                                                  # visualization of clustering results (up to bivariate)
+    ```
+
+  - **Example Configuration** (from `run_ml_mages.sh`):  
+    ```bash
+    python -u ml_mages.py \
+    --gwa_files $gwa_files --traits $traits \
+    --ld_path $ld_path --ld_block_file $ld_block_file \
+    --gene_file $gene_file \
+    --model_path $model_path --n_layer $n_layer --top_r $top_r \
+    --output_path $output_path 
+    ```
+
+* **`split_ld_blocks.py`**
+
+  - Preprocesses LD matrices into block-wise partitions for downstream ML-MAGES analysis. 
+  
+  - **Usage**:  
+  ```bash
+  python -u split_ld_blocks.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --full_ld_file            Path to full LD matrix file (space-delimited)
+    --output_file             Directory to save indices of the breakpoints to split the LD
+    ```
+    
+  - **Optional Arguments**:  
+    ```text
+    --avg_block_size          Approximated average LD block size after splitting [default: 1000]
+    ```
+
+  - **Outputs**:  
+    ```text
+    output_file               # indices of the breakpoints (right-boundary-only) to split the LD, with one index on each line
+    ```
+
+  - **Example Configuration** (from `split_and_process_ld.sh`):  
+    ```bash
+    python -u split_ld_blocks.py \
+    --full_ld_file $full_ld_file \
+    --output_file $output_file \
+    --avg_block_size $avg_block_size
+    ```
+
+* **`?.py`**
+
+  - summary 
+  
+  - **Usage**:  
+  ```bash
+  python -u ?.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+    
+  - **Optional Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+    
+  - **Outputs**:  
+    ```text
+    output/OUTPUT_PATH
+    ├── a.txt,                                    # shrinkage results for each trait
+    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ```
+
+  - **Example Configuration** (from `?.sh`):  
+    ```bash
+    python -u ?.py \
+    ```
+
+  * **`split_ld_blocks.py`**
+
+  - summary 
+  
+  - **Usage**:  
+  ```bash
+  python -u ?.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
+  - **Outputs**:  
+    ```text
+    output/OUTPUT_PATH
+    ├── a.txt,                                    # shrinkage results for each trait
+    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ```
+
+  - **Example Configuration** (from `?.sh`):  
+    ```bash
+    python -u ?.py \
+    ```
+
+    
+ ### Detailed Input Requirements  
   1. **LD Blocks** (`data/block_ld/`):  
      - Files: `block_0.ld`, `block_1.ld`, etc.  
      - Metadata: `block_ids.txt` (required), `blocks_meta.csv` (optional)  
