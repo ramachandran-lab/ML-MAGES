@@ -34,7 +34,7 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 * The default working directory is assumed to be `ML-MAGES/code`. However, you can switch to your preferred working directory, provided that you update all the file paths accordingly.
 * To run the method using a single pre-trained model (trained using synthetic data based on genotype data) on example data, follow the commands in `run_single_example.sh`. After defining all input arguments, run
   ```bash
-   python -u run_single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
+   python -u single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
   ```
 * **[Recommended]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in `run_ml_mages.sh`.
    * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the meta information file for genes (see [below](#TODO) for detailed data contents).
