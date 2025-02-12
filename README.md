@@ -27,7 +27,7 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 
 ## Quick Start 
 * Install required Python packages if not already (see [`requirements.txt`](requirements.txt)).
-* Clone this repository to your local directory.
+* **Clone this repository to your local directory.**
   ```bash
   git clone https://github.com/ramachandran-lab/ML-MAGES.git
   ```
@@ -55,7 +55,7 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 * [`demo_vis_outputs.ipynb`](demo_vis_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
 * [`demo_eval_perf.ipynb`](demo_eval_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
 
-The structure of the rest of this manual goes as follows:
+**The structure of the rest of this manual goes as follows:**
 * [Contents of the Repository](#contents-of-the-repository)
 * [Usage of Functions](#usage-of-functions)
   | Function                          | Summary                                                                                                       |
