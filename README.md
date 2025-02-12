@@ -45,7 +45,7 @@ This isolates the tool's dependencies from system-wide Python installations, avo
    --gwa_files $gwa_files --traits $traits \
    --ld_path $ld_path --ld_block_file $ld_block_file \
    --gene_file $gene_file \
-   --model_path $model_path --n_layer $n_layer --top_r $top_r \
+   --model_path $model_path --n_layer $n_layer --top_r $top_r --n_models $n_models \
    --output_path $output_path 
    ```
    * Details of output files can be found [here](#detailed-output-information).
@@ -76,39 +76,45 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 ```text
 ML-MAGES/
 ├── code/                   
-│   ├── _main_funcs.py           # Core ML-MAGES functions
-│   ├── _cls_funcs.py            # Utility functions for clustering
-│   ├── _train_funcs.py          # Utility functions for model training 
-│   ├── _enrich_funcs.py         # Utility function for enrichment analysis alternatives, specifically to replace the default enrichment test if installation of the required package 'chiscore' fails.
-│   ├── _sim_funcs.py            # Utility functions for synthetic data generation and performance evaluation
-│   ├── single_example.sh        # Apply a single model on example data (demo)
-│   ├── ml_mages.sh              # [Main] Apply ensemble models on real data 
-│   ├── split_and_process_ld.sh  # LD splitting and pre-processing script
-│   ├── train_model.sh           # Model training script
-│   ├── simulate_train.sh        # Synthetic data generation (for training) script
-│   ├── train_model.sh           # Model training script
-│   ├── simulate_evaluation.sh   # Synthetic data generation (for evaluation) script
-│   ├── demo_vis_outputs.ipynb   # Result visualization notebook
-│   └── demo_eval_perf.ipynb     # Performance evaluation notebook
+│   ├── _main_funcs.py               # Core ML-MAGES functions
+│   ├── _cls_funcs.py                # Utility functions for clustering
+│   ├── _enrich_funcs.py             # Utility function for enrichment analysis alternatives, specifically to replace the default enrichment test if installation of the required package 'chiscore' fails.
+│   ├── _train_funcs.py              # Utility functions for model training 
+│   ├── _sim_funcs.py                # Utility functions for synthetic data generation and performance evaluation
+│   ├── single_example.py            # Function to apply a single model on example data (demo)
+│   ├── ml_mages.py                  # [Main] Function to apply ensemble models on real data
+│   ├── split_ld_blocks.sh           # Function to split LD of a chromosome (or other given segment) into blocks
+│   ├── process_ld_blocks_and_gwa.py # Function to extract the split LD blocks and concatenate GWA files from multiple chromosome (if needed)
+│   ├── simulate_train.py            # Function to generate synthetic data for training
+│   ├── train_model.py               # Function to train models
+│   ├── simulate_evaluation.py       # Function to generate synthetic data for performance evaluation
+│   ├── run_single_example.sh        # Script to apply a single model on example data (demo)
+│   ├── run_ml_mages.sh              # [Main] Script to apply ensemble models on real data 
+│   ├── split_and_process_ld.sh      # LD splitting and pre-processing script
+│   ├── simulate_train.sh            # Synthetic data generation (for training) script
+│   ├── train_model.sh               # Model training script
+│   ├── simulate_evaluation.sh       # Synthetic data generation (for evaluation) script
+│   ├── demo_vis_outputs.ipynb       # Result visualization notebook
+│   └── demo_eval_perf.ipynb         # Performance evaluation notebook
 │
-├── example_data/                # Input for run_single_example.sh
-│   ├── example_gwa_HDL.txt      # Example GWAS results (HDL)
-│   ├── example_gwa_LDL.txt      # Example GWAS results (LDL)
-│   ├── example_block*.ld        # LD matrices (blocks 1-2)
-│   └── block_brkpts.txt         # LD block boundaries (only the right boundary for each block)
+├── example_data/                    # Input for run_single_example.sh
+│   ├── example_gwa_HDL.txt          # Example GWAS results (HDL)
+│   ├── example_gwa_LDL.txt          # Example GWAS results (LDL)
+│   ├── example_block*.ld            # LD matrices (blocks 1-2)
+│   └── block_brkpts.txt             # LD block boundaries (only the right boundary for each block)
 │
 ├── trained_model/          
-│   ├── genotyped_models/        # Models trained using synthetic data based on genotype data
-│   └── imputed_models/          # Models trained using synthetic data based on imputation data
+│   ├── genotyped_models/            # Models trained using synthetic data based on genotype data
+│   └── imputed_models/              # Models trained using synthetic data based on imputation data
 │
-├── example_output/              # Outputs of run_single_example.sh
+├── example_output/                  # Outputs of run_single_example.sh
 │
-├── data/                        # (Selected files in this folder have been omitted to restrict size: Input for run_ml_mages.sh)
-│   ├── block_ld/                # LD block matrices
-│   ├── gwa/                     # GWAS files (gwas_TRAIT.csv)
-│   └── genelist.csv             # Gene metadata
+├── data/                            # (Selected files in this folder have been omitted to restrict size: Input for run_ml_mages.sh)
+│   ├── block_ld/                    # LD block matrices
+│   ├── gwa/                         # GWAS files (gwas_TRAIT.csv)
+│   └── genelist.csv                 # Gene metadata
 │
-└── output/                      # (Empty by default: Output of run_ml_mages.sh)
+└── output/                          # (Empty by default: Output of run_ml_mages.sh)
 ```
 
 ---
@@ -175,7 +181,8 @@ ML-MAGES/
     --gene_file      Path to gene annotation metadata file (CSV format)
     --model_path     Directory containing pre-trained shrinkage models
     --n_layer        Model architecture configuration (chosen from {2,3})
-    --top_r          Number of top variants for feature construction (choices: {5,10,15})
+    --top_r          Number of top variants for feature construction (chosen from {5,10,15})
+    --n_models       Number of models to use for ensemble learning, where trained models are indexed from 0 to n_models-1
     --output_path    Path to save analysis results 
     ```
 
