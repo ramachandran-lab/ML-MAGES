@@ -534,4 +534,4 @@ Name of the model files follows ''Fc*a*top*b*_*c*.model'', where *a* is the numb
 
 [1] Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
 
-For questions and comments, please contact Xiran Liu at *xiran_liu1 at brown dot edu*.
+For questions and comments, please contact the author at *xiran_liu1 at brown dot edu*.
