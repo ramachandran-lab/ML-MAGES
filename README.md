@@ -121,7 +121,7 @@ ML-MAGES/
   
   - **Outputs**:  
     ```text
-    example_output/
+    output_path
     ├── regularized_effects_TRAIT.txt,                                    # shrinkage results for each trait
     ├── univar_TRAIT_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt             # univariate clustering results for each trait
     ├── enrichment_TRAIT.csv                                              # univariate gene enrichment results for each trait
@@ -164,7 +164,7 @@ ML-MAGES/
 
   - **Outputs**:  
     ```text
-    output/OUTPUT_PATH
+    output_path
     ├── regularized_effects_TRAIT.txt,                                    # shrinkage results for each trait
     ├── univar_TRAIT_cls.txt, *_pi.txt, *_Sigma.txt, *_zc.txt             # univariate clustering results for each trait
     ├── enrichment_TRAIT.csv                                              # univariate gene enrichment results for each trait
@@ -323,24 +323,35 @@ ML-MAGES/
   
   - **Required Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --sim_chrs            Chromosomes corresponding to genotype and LD files to be used in the simulation, comma-separated
+    --geno_path           Path to genotype data files in PLINK format (`ukb_chr*.qced.bed/bim/fam`), multiple chromosomes separated by comma
+    --ld_path             Path to full LD matrix files (`ukb_chr*.qced.ld`), multiple chromosomes separated by comma
+    --output_path         Path to save the simulation outputs
     ```
 
   - **Optional Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --n_inds              Number of individuals to be sampled for each simulation [default: 10000]
+    --n_snps              Number of variants to be sampled for each simulation [default: 1000]
+    --n_sim               Number of simulations [default: 100]
+    --top_r               Number of top (highest correlation) variants to save for future feature construction [default: 25]
     ```
 
   - **Outputs**:  
     ```text
-    output/OUTPUT_PATH
-    ├── a.txt,                                    # shrinkage results for each trait
-    └── b.png                                     # visualization of clustering results (up to bivariate)
+    output_path
+    ├── ninds*_nsnps*_nsim*_topr*_chr*.X          # simulated features (n_sim*n_snps rows); number (and order) of columns correspond to those of features (default: 2*25+3; see [1])
+    ├── ninds*_nsnps*_nsim*_topr*_chr*.y          # simulated trait values (n_sim*n_snps lines)
+    └── ninds*_nsnps*_nsim*_topr*_chr*.meta       # meta information of simulations (4 columns and n_sim rows); columns record chr, starting index of sampled variants, h2, and number of associated variants
     ```
 
-  - **Command** (from `?.sh`):  
+  - **Command** (from `simulate_train.sh`):  
     ```bash
-    python -u ?.py \
+    python -u simulate_train.py \
+    --sim_chrs $sim_chrs \
+    --geno_path $geno_path \
+    --ld_path $ld_path \
+    --output_path $output_path 
     ```
 
 ### `train_model.py`
