@@ -54,18 +54,18 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 * [`demo_vis_outputs.ipynb`](demo_vis_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
 * [`demo_eval_perf.ipynb`](demo_eval_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
 
-## Repository Structure  
+## Contents of the Repository
 
 ```text
 ML-MAGES/
 ├── code/                   
-│   ├── ml_mages.py              # Core ML-MAGES function and utility functions
+│   ├── _main_funcs.py           # Core ML-MAGES functions
 │   ├── _cls_funcs.py            # Utility functions for clustering
 │   ├── _train_funcs.py          # Utility functions for model training 
 │   ├── _enrich_funcs.py         # Utility function for enrichment analysis alternatives, specifically to replace the default enrichment test if installation of the required package 'chiscore' fails.
 │   ├── _sim_funcs.py            # Utility functions for synthetic data generation and performance evaluation
-│   ├── run_single_example.sh    # Single model on example data demo
-│   ├── run_ml_mages.sh          # Ensemble models on real data demo
+│   ├── single_example.sh        # Apply a single model on example data (demo)
+│   ├── ml_mages.sh              # [Main] Apply ensemble models on real data 
 │   ├── split_and_process_ld.sh  # LD splitting and pre-processing script
 │   ├── train_model.sh           # Model training script
 │   ├── simulate_train.sh        # Synthetic data generation (for training) script
@@ -74,7 +74,7 @@ ML-MAGES/
 │   ├── demo_vis_outputs.ipynb   # Result visualization notebook
 │   └── demo_eval_perf.ipynb     # Performance evaluation notebook
 │
-├── example_data/                
+├── example_data/                # Input for run_single_example.sh
 │   ├── example_gwa_HDL.txt      # Example GWAS results (HDL)
 │   ├── example_gwa_LDL.txt      # Example GWAS results (LDL)
 │   ├── example_block*.ld        # LD matrices (blocks 1-2)
@@ -84,14 +84,14 @@ ML-MAGES/
 │   ├── genotyped_models/        # Models trained using synthetic data based on genotype data
 │   └── imputed_models/          # Models trained using synthetic data based on imputation data
 │
-├── example_output/              # Outputs from run_single_example.sh
+├── example_output/              # Outputs of run_single_example.sh
 │
-├── data/                        # (Selected files in this folder have been omitted to restrict size.)
+├── data/                        # (Selected files in this folder have been omitted to restrict size: Input for run_ml_mages.sh)
 │   ├── block_ld/                # LD block matrices
 │   ├── gwa/                     # GWAS files (gwas_TRAIT.csv)
 │   └── genelist.csv             # Gene metadata
 │
-└── output/                      # (Empty by default: Outputs from run_ml_mages.sh)
+└── output/                      # (Empty by default: Output of run_ml_mages.sh)
 ```
 
 ### Key Components  
@@ -105,7 +105,7 @@ ML-MAGES/
 ---
 
 ## Usage of Functions
-* **`single_example.py`**
+### `single_example.py`
 
   - Run the core ML-MAGES workflow for a single model on example data.  
   
@@ -118,7 +118,7 @@ ML-MAGES/
     ```text
     --gwa_files      Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
     --traits         Names of traits corresponding to gwa_files, separated by comma
-    --ld_path        Directory containing LD matrix blocks (block_0.ld, block_1.ld, etc.)
+    --ld_path        Directory containing LD matrix blocks (block0.ld, block1.ld, etc.)
     --ld_block_file  Path to LD block boundary indices file
     --gene_file      Path to gene annotation metadata file (CSV format)
     --model_path     Directory containing pre-trained shrinkage models
@@ -148,7 +148,7 @@ ML-MAGES/
     --output_path $output_path
     ```
 
-* **`ml_mages.py`**
+### `ml_mages.py`
 
   - Run the core ML-MAGES workflow for ensemble models on real data. 
   
@@ -161,7 +161,7 @@ ML-MAGES/
     ```text
     --gwa_files      Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
     --traits         Names of traits corresponding to gwa_files, separated by comma
-    --ld_path        Directory containing LD matrix blocks (block_0.ld, block_1.ld, etc.)
+    --ld_path        Directory containing LD matrix blocks (block0.ld, block1.ld, etc.)
     --ld_block_file  Path to LD block boundary indices file
     --gene_file      Path to gene annotation metadata file (CSV format)
     --model_path     Directory containing pre-trained shrinkage models
@@ -190,10 +190,22 @@ ML-MAGES/
     --model_path $model_path --n_layer $n_layer --top_r $top_r \
     --output_path $output_path 
     ```
+#### Detailed Input Requirements  
+    1. **LD Data** (`data/block_ld/`):  
+       - Files: `block0.ld`, `block1.ld`, etc.  
+       - Metadata: `block_brkpts.txt` (required, indices of right boundaries of the split LD blocks, with one index on each line), `blocks_meta.csv` (optional)
+       - ***If not splitting LD***: use a single LD "block", and a breakpoint file with a single value denoting the number of variants (should be the same as the length of LD).
+    
+    2. **GWAS Data** (`data/gwa/`):  
+       - Files: `gwas_[TRAIT].csv` with columns `BETA` (GWA effect) and `SE` (standard error); other columns are optional  
+    
+    3. **Gene Annotation** (`data/genelist.csv`):  
+       - CSV file with required columns: 
+         `CHR`, `GENE`, `START`, `END`, `SNP_FIRST` (index of the first variant considered in this gene), and `SNP_LAST`  (index of the last variant)  
 
-* **`split_ld_blocks.py`**
+### `split_ld_blocks.py`
 
-  - Preprocesses LD matrices into block-wise partitions for downstream ML-MAGES analysis. 
+  - Split LD matrices into block-wise partitions. 
   
   - **Usage**:  
   ```bash
@@ -224,38 +236,58 @@ ML-MAGES/
     --avg_block_size $avg_block_size
     ```
 
-* **`?.py`**
+### `process_ld_blocks_and_gwa.py`
 
-  - summary 
+  - Process split LD blocks and concatenates the breakpoints as well as GWA results (optional) of all chromosomes for downstream ML-MAGES analysis.
   
   - **Usage**:  
   ```bash
-  python -u ?.py <arguments>
+  python -u process_ld_blocks_and_gwa.py <arguments>
   ```  
   
   - **Required Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --chrs                  Chromosomes corresponding to LD (and GWA) files to be processed, comma-separated
+    --full_ld_files         Path to full LD matrix files, multiple chromosomes separated by comma
+    --brkpts_files          Path to files containing saved indices of LD splitting breakpoints (i.e., output of ``split_ld_blocks.py``), multiple chromosomes separated by comma
+    --ld_block_meta_file    Path to the output file with meta info of LD splitting
+    --ld_block_brkpts_file  Path to the output file with all breakpoints (right boundaries only)
+    --ld_block_path         Path to save the split LD blocks (block*.ld)
+    --gwa_files             Path to GWAS summary statistics files (CSV format) to be processed (use a blank string "" if not processing this), multiple traits separated by semicolon and multiple chromosomes of the same trait separated by comma; ex. of nested structure: "trait1-chr1,trait1-chr2;trait2-chr1,trait2-chr2")
+    --processed_gwa_files   Path to save processed GWAS files, multiple traits separated by semicolon
     ```
     
   - **Optional Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --chr_col               Name of the column for chromosome of the genetic variant [default: CHR]
+    --pos_col               Name of the column for base pair position of the genetic variant  [default: POS]
+    --id_col                Name of the column for ID of the genetic variant [default: ID]
+    --beta_col              Name of the column for GWA effect of the genetic variant  [default: BETA]
+    --se_col                Name of the column for GWA standard error of the genetic variant  [default: SE]
     ```
     
   - **Outputs**:  
     ```text
-    output/OUTPUT_PATH
-    ├── a.txt,                                    # shrinkage results for each trait
-    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ld_block_meta_file      # CSV file containing information on LD blocks; columns: `block_id` (index in all chromosomes), `chr`, `id_in_chr` (index in each chromosome), `brkpt` (right boundary breakpoint)
+    ld_block_brkpts_file    # Text file (txt format) with indices of the breakpoints (right-boundary-only) to split the LD, with one index on each line
+    ld_block_path
+    └── block*.ld                                     # visualization of clustering results (up to bivariate)
     ```
 
   - **Example Configuration** (from `?.sh`):  
     ```bash
-    python -u ?.py \
+    python -u process_ld_blocks_and_gwa.py \
+    --chrs $chrs \
+    --full_ld_files $full_ld_files \
+    --brkpts_files $brkpts_files \
+    --ld_block_meta_file $ld_block_meta_file \
+    --ld_block_brkpts_file $ld_block_brkpts_file \
+    --ld_block_path $ld_block_path \
+    --gwa_files $gwa_files \
+    --processed_gwa_files $processed_gwa_files
     ```
 
-  * **`split_ld_blocks.py`**
+### `?.py`
 
   - summary 
   
@@ -269,6 +301,73 @@ ML-MAGES/
     --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
     ```
 
+  - **Optional Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
+  - **Outputs**:  
+    ```text
+    output/OUTPUT_PATH
+    ├── a.txt,                                    # shrinkage results for each trait
+    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ```
+
+  - **Example Configuration** (from `?.sh`):  
+    ```bash
+    python -u ?.py \
+    ```
+
+### `?.py`
+
+  - summary 
+  
+  - **Usage**:  
+  ```bash
+  python -u ?.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
+  - **Optional Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
+  - **Outputs**:  
+    ```text
+    output/OUTPUT_PATH
+    ├── a.txt,                                    # shrinkage results for each trait
+    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ```
+
+  - **Example Configuration** (from `?.sh`):  
+    ```bash
+    python -u ?.py \
+    ```
+
+### `?.py`
+
+  - summary 
+  
+  - **Usage**:  
+  ```bash
+  python -u ?.py <arguments>
+  ```  
+  
+  - **Required Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
+  - **Optional Arguments**:  
+    ```text
+    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    ```
+
   - **Outputs**:  
     ```text
     output/OUTPUT_PATH
@@ -282,17 +381,7 @@ ML-MAGES/
     ```
 
     
- ### Detailed Input Requirements  
-  1. **LD Blocks** (`data/block_ld/`):  
-     - Files: `block_0.ld`, `block_1.ld`, etc.  
-     - Metadata: `block_ids.txt` (required), `blocks_meta.csv` (optional)  
-  
-  2. **GWAS Data** (`data/gwa/`):  
-     - Format: `gwas_[TRAIT].csv` with `BETA`, `SE`, `CHR` columns  
-  
-  3. **Gene Metadata** (`data/genelist.csv`):  
-     - Required columns: `CHR`, `GENE`, `START`, `END`, `SNP_FIRST`, `SNP_LAST`  
-* split_ld_blocks
+
 * process_ld_blocks_and_gwa
 * simulate_train # This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
 * train_model # This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
@@ -310,7 +399,7 @@ The `example_data` folder in this repository contains the toy data for running a
 - `example_gwa_HDL.csv` and `example_gwa_LDL.csv`: These comma-delimited csv files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL). **Required columns for GWA result files include ``BETA`` for GWA effect and ``SE`` for standard error.**
 - `example_block*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank. **The matrix is comma-delimited.** 
 - `block_brkpts.txt`: This file contains (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. **Only the right boundaries are included, with one index on each line.** For instance, two indices ``851 1818`` indicate that the LD is split into blocks that should be indexed by ``[0:851]`` and ``[851:1818]``. Note that in Python indexing ``[start:end]``, the ``start`` index is inclusive, while the ``end`` index is exclusive
-- `example_genelist`: This comma-delimited csv file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it (**columns ``SNP_FIRST`` and ``SNP_LAST``, required**), as well as its choromosome (``CHR``), its name (``GENE``), and the number of variants considered in this gene (``N_SNPS``).
+- `example_genelist`: This comma-delimited csv file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it (**columns ``SNP_FIRST`` and ``SNP_LAST``, required**), as well as its chromosome (``CHR``), its name (``GENE``), and the number of variants considered in this gene (``N_SNPS``).
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
 
 ### Contents of ``data`` folder
