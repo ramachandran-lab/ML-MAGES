@@ -365,24 +365,51 @@ ML-MAGES/
   
   - **Required Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --n_layer              Number of fully-connected layers in the model architecture configuration
+    --top_r                Number of top variants for feature construction
+    --geno_path            Path to genotype data files in PLINK format (`ukb_chr*.qced.bed/bim/fam`) for the chromosomes used in simulation
+    --ld_path              Path to full LD matrix file (`ukb_chr*.qced.ld`) for the chromosomes used in simulation
+    --gwa_files            Path to GWA result files (CSV format) used for matching the simulation to real data, multiple traits separated by comma; columns: `BETA` and `SE`
+    --sim_path             Path to simulated training data files
+    --sim_label_prefix     Prefix of the labels for simulation data to be used for training
+    --output_base_path     Home directory to save the trained model
+    --train_chrs           Chromosomes used in training set, multiple chromosomes separated by comma 
+    --val_chrs             Chromosomes used in validation set, multiple chromosomes separated by comma 
     ```
 
   - **Optional Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --model_idx            Model index for labeling multiple models with the same architecture [default: 0]
+    --n_epochs             Maximum training epochs [default: 500]
+    --bs                   Batch size [default: 50]
+    --lr                   Learning rate [default: 1e-4]
+    --reg_lambda           Regularization lambda for model parameters [default:1e-5]
+    --es_patience          Early stopping patience [default: 25]
+    --es_eps               Early stopping tolerance [default: 1e-9]
     ```
 
   - **Outputs**:  
     ```text
     output/OUTPUT_PATH
-    ├── a.txt,                                    # shrinkage results for each trait
-    └── b.png                                     # visualization of clustering results (up to bivariate)
+    ├── epochs/                      # directory to store temporary models during training (for early-stopping)
+    └── Fcatopb_c.model              # trained model, labeled by a=n_layer, b=top_r, c=model_idx
     ```
 
-  - **Command** (from `?.sh`):  
+  - **Command** (from `train_model.sh`):  
     ```bash
-    python -u ?.py \
+    python -u train_model.py \
+    --n_layer $n_layer \
+    --top_r $top_r \
+    --phenotypes $phenotypes \
+    --geno_path $geno_path \
+    --ld_path $ld_path \
+    --gwas_path $gwas_path \
+    --sim_path $sim_path \
+    --sim_label_prefix $sim_label_prefix \
+    --output_base_path $output_base_path \
+    --train_chrs $train_chrs \
+    --val_chrs $val_chrs \
+    --model_idx $model_idx 
     ```
 
 ### `simulate_evaluation.py`
@@ -396,24 +423,44 @@ ML-MAGES/
   
   - **Required Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --chr               Chromosome corresponding to genotype and LD file to be used in the simulation
+    --geno_file         Path to genotype data files in PLINK format (`ukb_chr*.qced.bed/bim/fam`) for the chromosome
+    --full_ld_file      Path to full LD matrix file (`ukb_chr*.qced.ld`) for the chromosome
+    --gwa_files         Path to GWA result files (CSV format) used for matching the simulation to real data, multiple traits separated by comma; columns: `BETA` and `SE`
+    --gene_list_file    Path to the gene annotation file (CSV format) used for gene-level simulation; columns include `CHR`, `GENE`, `START`, and `END`
+    --output_path       Path to save the simulation outputs
     ```
 
   - **Optional Arguments**:  
     ```text
-    --aaa            Path to GWAS summary statistics files (CSV format), multiple traits separated by comma
+    --n_inds              Number of individuals to be sampled for each simulation [default: 10000]
+    --min_gene_size       Minimum number of variants in a gene for the gene to be considered a candidate for causal genes (i.e., those containing variants with non-zero true effects) [default: 10]
+    --n_traits            Number of traits to be simulation simultaneously [default: 3]
+    --causal_types        Association types of among simulated traits, with each type of association shared by comma-separated trait indices, multiple association types separated by semicolon [default: "1;2;3;1,2;1,2,3"] (Note: the default association types are trait 1-specific, trait 2-specific, trait 3-specific, traits 1&2-shared, all traits-shared.)
+    --n_sim               Number of simulations [default: 100]
     ```
 
-  - **Outputs**:  
+  - **Outputs**:
     ```text
-    output/OUTPUT_PATH
-    ├── a.txt,                                    # shrinkage results for each trait
-    └── b.png                                     # visualization of clustering results (up to bivariate)
-    ```
+    output_path
+    └── data_sim*.txt     # simulated data (n_traits*3 columns); number of rows correspond to number of variants in the chromosome used; columns record true effect (for each of n_trait), observed GWA effect (for each of n_trait), and observed GWA standard error (for each of n_trait)
+    ``` 
+    
 
-  - **Command** (from `?.sh`):  
+  - **Command** (from `simulate_evaluation.sh`):  
     ```bash
-    python -u ?.py \
+    python -u simulate_evaluation.py \
+    --chr $chr \
+    --geno_file $geno_file \
+    --full_ld_file $full_ld_file \
+    --gwa_files $gwa_files \
+    --gene_list_file $gene_list_file \
+    --output_path $output_path \
+    --n_inds $n_inds \
+    --min_gene_size $min_gene_size \
+    --n_traits $n_traits \
+    --causal_types $causal_types \
+    --n_sim $n_sim
     ```
 
   
