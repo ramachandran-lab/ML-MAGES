@@ -1,7 +1,7 @@
 # Simulate training data
 
 # Chromosomes used for simulation
-sim_chrs=21,22
+sim_chrs=18,19,20,21,22
 # Directory path for the genotyped data
 geno_path=../data/real
 # Path for the (full) LD data
@@ -20,5 +20,5 @@ python -u simulate_train.py \
 --geno_path $geno_path \
 --ld_path $ld_path \
 --output_path $output_path \
---n_sim 10 \
+--n_sim 100 \
 > $log_file 2>&1 

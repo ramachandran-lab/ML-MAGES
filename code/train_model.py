@@ -21,14 +21,12 @@ def main(args):
     print("Using {}-layer model".format(n_layer))
     top_r = args.top_r
     print("Using top {} variants".format(top_r))
-    phenotypes = args.phenotypes.split(",")
-    print("phenotypes", phenotypes)
     geno_path = args.geno_path
     print("geno_path:", geno_path)
     ld_path = args.ld_path
     print("ld_path:", ld_path)
-    gwas_path = args.gwas_path
-    print("gwas_path:", gwas_path)
+    gwa_files = args.gwa_files.split(",")
+    print("gwa_files:", gwa_files)
     sim_path = args.sim_path
     print("sim_path:", sim_path)
     sim_label_prefix = args.sim_label_prefix
@@ -79,8 +77,7 @@ def main(args):
     print("loaded validation data shape:", X_test.shape, y_test.shape, meta_test.shape)
 
     # load real data 
-    real_files = [os.path.join(gwas_path,'gwas_{}.csv'.format(pheno)) for pheno in phenotypes]
-    beta_real, se_real = tf.load_real_data(real_files)
+    beta_real, se_real = tf.load_real_data(gwa_files)
 
     # transform simulated data to match real distributions and subset for training
     X_tr, y_tr, y_train_scale = tf.scale_and_subset(X_train,y_train, beta_real, se_real, max_r, top_r, scale=1, asymmetric=False)
@@ -225,13 +222,12 @@ if __name__ == "__main__":
     
     parser.add_argument('--n_layer', type=int, help='Number of layers in the model')
     parser.add_argument('--top_r', type=int, help='Number of top variants to use')
-    parser.add_argument('--phenotypes', type=str, help='Comma-separated list of phenotypes')
     parser.add_argument('--geno_path', type=str, help='Path to genotype data files')
     parser.add_argument('--ld_path', type=str, help='Path to ld files')
-    parser.add_argument('--gwas_path', type=str, help='Path to gwas results files')
+    parser.add_argument('--gwa_files', type=str, help='Path to gwas results files, with multiple files seperated by comma')
     parser.add_argument('--sim_path', type=str, help='Path to simulated data files')
     parser.add_argument('--sim_label_prefix', type=str, help='Prefix of simulation labels')
-    parser.add_argument('--output_base_path', type=str, help='Base path for output files')
+    parser.add_argument('--output_base_path', type=str, help='Path for output files')
     parser.add_argument('--train_chrs', type=str, help='Comma-separated list of training chromosomes')
     parser.add_argument('--val_chrs', type=str, help='Comma-separated list of validation chromosomes')
 

@@ -2,6 +2,6 @@ These commands are used for running the bash script on clusters.
 
 module load python/3.9.16s-x3wdtvt
 source ~/pytorch.venv/bin/activate
-bash run_ensemble.sh
+bash run_ml_mages.sh
 deactivate
 

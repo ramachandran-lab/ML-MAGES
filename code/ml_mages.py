@@ -26,11 +26,12 @@ def main(args):
     print("n_layer:", n_layer)
     top_r = args.top_r
     print("top_r:", top_r)
+    n_models = args.n_models
+    print("n_models:", n_models)
     output_path = args.output_path
     print("output_path:", output_path)
 
     scale = 250
-    n_models = 10
     n_traits = len(traits)
 
     if not os.path.exists(output_path):
@@ -201,7 +202,8 @@ if __name__ == "__main__":
     parser.add_argument('--gene_file', type=str, required=True, help='file containing gene data')
     parser.add_argument('--model_path', type=str, required=True, help='path to the trained models')
     parser.add_argument('--n_layer', type=int, choices=[2,3], required=True, help='number of layers in the model, chosen from [2,3]')
-    parser.add_argument('--top_r', type=int, choices=[15], required=True, help='number of top top  (highest correlation) variants used to construct the features, chosen from [15]')
+    parser.add_argument('--top_r', type=int, choices=[15], required=True, help='number of top (highest correlation) variants used to construct the features, chosen from [15]')
+    parser.add_argument('--n_models', type=int, required=True, help='number of models; note that the number of models should be consistent with those trained (indexed from 0 to n_models-1)')
     parser.add_argument('--output_path', type=str, required=True, help='path to save the output files')
 
     args = parser.parse_args()

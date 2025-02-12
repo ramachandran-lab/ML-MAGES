@@ -7,7 +7,6 @@ from statsmodels.stats.multitest import fdrcorrection
 from sklearn.metrics import precision_recall_curve, average_precision_score, r2_score, precision_recall_fscore_support
 
 import torch
-import torch.nn as nn
 from sklearn import preprocessing
 # for shrinkage using ENET
 from sklearn.linear_model import ElasticNetCV

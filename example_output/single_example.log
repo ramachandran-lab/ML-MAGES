@@ -9,9 +9,9 @@ n_layer: 3
 top_r: 15
 output_path: ../example_output
 =====//ML-MAGES// Run Single Model on Example Data=====
-Loading takes 0.84 seconds
-Shrinkage and univariate clustering take 2.94 seconds
-Bivariate clustering takes 1.23 seconds
-Univariate gene enrichment analysis takes 0.16 seconds
+Loading takes 0.71 seconds
+Shrinkage and univariate clustering take 2.79 seconds
+Bivariate clustering takes 1.18 seconds
+Univariate gene enrichment analysis takes 0.11 seconds
 Bivariate gene analysis takes 0.07 seconds
 ============DONE============

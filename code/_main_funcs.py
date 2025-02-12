@@ -64,7 +64,7 @@ def load_gwa_results(gwa_files, beta_col='BETA', se_col='SE'):
     return beta, se
 
 
-def load_ld_blocks(ld_files, sep=" "):
+def load_ld_blocks(ld_files, sep=","):
     """
     Load LD blocks from a list of LD files.
 

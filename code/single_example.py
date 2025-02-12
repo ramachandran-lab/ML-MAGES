@@ -39,8 +39,8 @@ def main(args):
     beta, se = mf.load_gwa_results(gwa_files, beta_col='BETA', se_col='SE')
     ld_block_ids = np.loadtxt(ld_block_file, dtype=int).astype(int)
     brkpts = np.insert(ld_block_ids,0,0)
-    ld_files = [os.path.join(ld_path,"example_block{}.ld".format(i_bk+1)) for i_bk in range(len(ld_block_ids))]
-    ld_list = mf.load_ld_blocks(ld_files)
+    ld_files = [os.path.join(ld_path,"example_block_{}.ld".format(i_bk)) for i_bk in range(len(ld_block_ids))]
+    ld_list = mf.load_ld_blocks(ld_files, sep=",")
     assert(sum([ld.shape[0] for ld in ld_list])==len(beta[0]))
 
     # load trained models

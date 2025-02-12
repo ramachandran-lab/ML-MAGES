@@ -137,7 +137,7 @@ if __name__ == "__main__":
     parser.add_argument('--brkpts_files', type=str, required=True, help='path to the breakpoints files of LD splitting (with multiple file names separated by comma)')
     
     parser.add_argument('--ld_block_meta_file', type=str, required=True, help='path to the file with meta info of LD splitting')
-    parser.add_argument('--ld_block_brkpts_file', type=str, required=True, help='path to the file with all breakpoints (including the END)')
+    parser.add_argument('--ld_block_brkpts_file', type=str, required=True, help='path to the file with all breakpoints (right boundaries only)')
     parser.add_argument('--ld_block_path', type=str, required=True, help='path to store the split LD blocks')
 
     parser.add_argument('--gwa_files', type=str, required=True, help='path to the GWA files to be processed (with multiple traits separated by semicolon and multiple chromosomes of the same trait separated by comma; ex. of nested structure: "trait1-chr1,trait1-chr2;trait2-chr1,trait2-chr2")')
