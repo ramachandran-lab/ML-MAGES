@@ -58,6 +58,15 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 The structure of the rest of this manual goes as follows:
 * [Contents of the Repository](#contents-of-the-repository)
 * [Usage of Functions](#usage-of-functions)
+  | Function                          | Summary                                                                                                       |
+  |-----------------------------------|---------------------------------------------------------------------------------------------------------------|
+  | `single_example.py`               | Run the core ML-MAGES workflow for a single model on example data.                                            |
+  | `ml_mages.py`                     | Run the core ML-MAGES workflow for ensemble models on real data.                                              |
+  | `split_ld_blocks.py`              | Split LD matrices into LD blocks.                                                                             |
+  | `process_ld_blocks_and_gwa.py`    | Process split LD blocks as well as GWA results (optional) of all chromosomes for downstream ML-MAGES analysis.|
+  | `simulate_train.py`               | Simulate synthetic effects and pseudo-traits for training based on real data.                                 |
+  | `train_model.py`                  | Train the models for effect size shrinkage using simulation based on real data.                               |
+  | `simulate_evaluation.py`          | Simulate synthetic data for performance evaluation, including the scenarios of multi-trait associations.      |
 * [Data](#data)
 * [Models](#models)
   
@@ -322,7 +331,7 @@ ML-MAGES/
 
 ### `simulate_train.py`
 
-  - Simulate synthetic effects for pseudo-traits based on real genotyped data and LD. 
+  - Simulate synthetic effects and pseudo-traits for training based on real data.   
   
   - **Usage**:  
   ```bash
@@ -364,7 +373,7 @@ ML-MAGES/
 
 ### `train_model.py`
 
-  - Train the models for effect size shrinkage using simulated data based on genotyped data 
+  - Train the models for effect size shrinkage using simulation based on real data. 
   
   - **Usage**:  
   ```bash
@@ -422,7 +431,7 @@ ML-MAGES/
 
 ### `simulate_evaluation.py`
 
-  - Simulate synthetic data for performance evluation based on real genotyped data and LD, including the scenarios of multi-trait associations. 
+  - Simulate synthetic data for performance evaluation, including the scenarios of multi-trait associations. 
   
   - **Usage**:  
   ```bash
@@ -517,7 +526,7 @@ The following files, contained in the folder `data/real` (not included), are use
 
 The simulated training data will be included in the folder `data/simulation/sim_train` (not shown), and subsequently used for model training.
 
-The simulated evluation data will be included in the folder `data/simulation/sim_gene_mlmt` (not shown), and subsequently used for performance evaluation.
+The simulated evaluation data will be included in the folder `data/simulation/sim_gene_mlmt` (not shown), and subsequently used for performance evaluation.
 
 ## Models
 The `trained_model` folder in this repository contains trained models. 
