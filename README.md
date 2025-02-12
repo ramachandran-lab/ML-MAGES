@@ -2,7 +2,7 @@
 Last Updated: 2/11/2025
 
 This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate
-genetic association analyses with genes and effect size shrinkage__.
+genetic association analyses with genes and effect size shrinkage__ [1]
 
 
 ## Requirements  
@@ -234,7 +234,8 @@ ML-MAGES/
      `enrichment_X.png`, `enrichment_Y.png` 
      - The manhattan plot shows negative log of adjusted p-values for each gene along the genome.
 
-
+  Users may generate other visualizations or perform downstream analyses using the result provided in these files on their own. 
+  
 ### `split_ld_blocks.py`
 
   - Split LD matrices into block-wise partitions. 
@@ -319,13 +320,13 @@ ML-MAGES/
     --processed_gwa_files $processed_gwa_files
     ```
 
-### `?.py`
+### `simulate_train.py`
 
-  - summary 
+  - Simulate synthetic effects for pseudo-traits based on real genotyped data and LD. 
   
   - **Usage**:  
   ```bash
-  python -u ?.py <arguments>
+  python -u simulate_train.py <arguments>
   ```  
   
   - **Required Arguments**:  
@@ -350,13 +351,13 @@ ML-MAGES/
     python -u ?.py \
     ```
 
-### `?.py`
+### `train_model.py`
 
-  - summary 
+  - Train the models for effect size shrinkage using simulated data based on genotyped data 
   
   - **Usage**:  
   ```bash
-  python -u ?.py <arguments>
+  python -u train_model.py <arguments>
   ```  
   
   - **Required Arguments**:  
@@ -381,13 +382,13 @@ ML-MAGES/
     python -u ?.py \
     ```
 
-### `?.py`
+### `simulate_evaluation.py`
 
-  - summary 
+  - Simulate synthetic data for performance evluation based on real genotyped data and LD, including the scenarios of multi-trait associations. 
   
   - **Usage**:  
   ```bash
-  python -u ?.py <arguments>
+  python -u simulate_evaluation.py <arguments>
   ```  
   
   - **Required Arguments**:  
@@ -411,25 +412,18 @@ ML-MAGES/
     ```bash
     python -u ?.py \
     ```
-
-    
-
-* process_ld_blocks_and_gwa
-* simulate_train # This file contains the code to simulate effects for pseudo-traits based on real genotyped data and LD (not included).
-* train_model # This file contains the code to train the models for effect size shrinkage based on the full genotyped data (not included).
-* simulate_evaluation # This file contains the code to simulate synthetic traits for performance evluation based on real genotyped data and LD (not included). Multiple traits with various association relationships can be simulated.
 
   
 ### Additional notebook files for visualizing results and comparing performances:
-- `demo_visualize_outputs.ipynb`: This Jupyter notebook demonstrates how to visualize and analyze gene-level output for multi-trait analyses.
-- `evaluate_perf.ipynb`: This Jupyter notebook demonstrates how to evaluate the performances of the methods using the simulated data.
+- `demo_vis_outputs.ipynb`: This Jupyter notebook provides example code on how to visualize and analyze gene-level output for multi-trait analyses.
+- `demo_eval_perf.ipynb`: This Jupyter notebook provides example code on how to evaluate the performances of the methods using the simulated data.
 
 
 ## Data
 ### Contents of ``example_data`` folder
 The `example_data` folder in this repository contains the toy data for running a single model:
 - `example_gwa_HDL.csv` and `example_gwa_LDL.csv`: These comma-delimited csv files contain the genome-wide association (GWA) results on a subset of variants on a segment of Chromosome 20 from the UK Biobank dataset for High-Density Lipoprotein (HDL) and Low-Density Lipoprotein (LDL). **Required columns for GWA result files include ``BETA`` for GWA effect and ``SE`` for standard error.**
-- `example_block*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank. **The matrix is comma-delimited.** 
+- `example_block_*.ld`: These files contain the linkage disequilibrium (LD) matrix, split into two blocks, of the same subset of variants from UK Biobank. **The matrix is comma-delimited.** 
 - `block_brkpts.txt`: This file contains (0-based-)indices of the boundary points at which the LD matrix correspond to the set of variants is split into blocks. **Only the right boundaries are included, with one index on each line.** For instance, two indices ``851 1818`` indicate that the LD is split into blocks that should be indexed by ``[0:851]`` and ``[851:1818]``. Note that in Python indexing ``[start:end]``, the ``start`` index is inclusive, while the ``end`` index is exclusive
 - `example_genelist`: This comma-delimited csv file contains the (unnamed) gene annotations of the subset of variants. Each gene is marked by the indices of the first and last variants in it (**columns ``SNP_FIRST`` and ``SNP_LAST``, required**), as well as its chromosome (``CHR``), its name (``GENE``), and the number of variants considered in this gene (``N_SNPS``).
 These files provide the necessary data for performing the ML-MAGES method described in the paper.
@@ -454,12 +448,16 @@ The `data` folder in this repository contains real data for running the full met
   - 'SNP_FIRST': index of the first variant considered for the gene
   - 'SNP_LAST': index of the last variant considered for the gene
 
-The following files, contained in the folder `data/real_for_sim` (not included), are used in `simulate_evaluation.sh` and `evaluate_perf.ipynb`:
-- `ukb_chr15.qced.bim`, `ukb_chr15.qced.bed`, `ukb_chr15.qced.fam`: the genotype data of Chr15 of UKB European individuals in PLINK format.
-- `ukb_chr15.qced.ld`: full LD matrix of Chr15 in UKB European individuals.
-- `blocks_chr15_ws1000.txt`: The (0-based-)indices of the boundary points at which the LD matrix of Chr15 is split into blocks.
-- 
-The simulated training data will be included in the folder `data/simulation` (not shown), and subsequently used for model training.
+The following files, contained in the folder `data/real` (not included), are used in `split_and_process_ld.sh`:
+- `ukb_chr*.qced.ld`: full LD matrix of Chr* in UKB European individuals.
+- `gwa/ukb_chr*.TRAIT.csv`: GWA results of TRAIT of Chr* in UKB European individuals, with columns including `#CHROM`, `POS`, `ID`, `BETA`,	`SE` and several other non-used ones.
+
+The following files, contained in the folder `data/real` (not included), are used in `simulate_evaluation.sh` and `demo_eval_perf.ipynb`:
+- `ukb_chr*.qced.bim`, `ukb_chr*.qced.bed`, `ukb_chr*.qced.fam`: the genotype data of Chr* of UKB European individuals in PLINK format.
+- `ukb_chr*.qced.ld`: full LD matrix of Chr* in UKB European individuals.
+- `block_ld/chr*_brkpts.txt`: The (0-based-)indices of the boundary points at which the LD matrix of Chr* is split into blocks.
+
+The simulated training data will be included in the folder `data/simulation/sim_train` (not shown), and subsequently used for model training.
 
 The simulated evluation data will be included in the folder `data/simulation/sim_gene_mlmt` (not shown), and subsequently used for performance evaluation.
 
@@ -469,78 +467,9 @@ The `trained_model` folder in this repository contains trained models.
 The subfolder `genotyped_simulated_training` contains the six models, each of a different architecture, trained using genotyped-data-based simulation described in the paper. We do not provide the simulated training data, but simulation and training can be performed following steps described in appendix. 
 
 The subfolder `imputed_simulated_training` contains two set of models, each with 10 models of a same architecture, trained using imputed-data-based simulation. The output of each set of models are averaged to generate an ensemble result of shrinkage, as used in the `ml_mages.py`. Similarly, simulation and training can be performed following steps described in appendix. 
-  * The model files are named as ''Fc*a*top*b*_*c*.model'', where *a* is the number of fully-connected layers in the neural network model, *b* is the number of top variants used to construct the features, and *c* is the index of the model among all models of the same architecture.
 
-## Input arguments for `ml_mages.py`
+Name of the model files follows ''Fc*a*top*b*_*c*.model'', where *a* is the number of fully-connected layers in the neural network model, *b* is the number of top variants used to construct the features, and *c* is the index of the model among all models of the same architecture.
 
-The main function `ml_mages.py` takes in 9 input arguments. These arguments are required for running the script and performing *ML-MAGES* on the given data:
-
-- `--gwa_files`: A comma-separated list of GWA files. These files contain the GWA results for different traits. E.g., `../data/gwa/gwas_MCV.csv,../data/gwa/gwas_MPV.csv,../data/gwa/gwas_PLC.csv`.
-
-- `--traits`: A comma-separated list of traits associated with the GWA files. Each trait corresponds to a GWA file. E.g., `MCV,MPV,PLC`.
-
-- `--ld_path`: The path to the LD (block) files. These files contain the linkage disequilibrium matrix split into blocks. E.g., `../data/block_ld`.
-
-- `--ld_block_file`: The file containing the LD block IDs. This file specifies the indices of the boundary points at which the LD matrix is split into blocks. E.g., `../data/block_ld/block_ids.txt`.
-
-- `--gene_file`: The file containing gene data. This file includes gene annotations for the subset of variants. E.g., `../data/genelist.csv`.
-
-- `--model_path`: The path to the trained models. This folder contains (multiple) trained models used for the ensemble learning by *ML-MAGES*. E.g., `../trained_models/imputed_simulated_training`.
-
-- `--n_layer`: The number of layers in the model. This argument should be chosen from either 2 or 3 for the provided trained models. User may choose other number if providing self-trained models.
-
-- `--top_r`: The number of top variants used to construct the features. This argument should be chosen as 15 for the provided trained models. User may choose other number if providing self-trained models.
-
-- `--output_path`: The path to save the output files. All output files generated by the *ML-MAGES* will be saved in this directory.
-
-## Output of `ml_mages.py`
-
-The script `ml_mages.py` outputs several files to the `output_path` folder specified. Suppose two traits are analyzed, X and Y. The output files in this folder include:
-
-1. Shrinkage results:
-   * `regularized_effects_X.txt`
-   * `regularized_effects_Y.txt`
-   
-   Each line corresponds to the regularized effect of one variant, for a total of M variants.
-2. Visualization of shrinkage results:
-   * `shrinkage_X.png`
-   * `shrinkage_Y.png`
-   
-   The plots show the effects before and after shrinkage for the M variants along the genome.
-3. Clustering results:
-   * `univar_X_cls.txt`, `univar_X_pi.txt`, `univar_X_Sigma.txt`, `univar_X_zc.txt`
-   * `univar_Y_cls.txt`, `univar_Y_pi.txt`, `univar_Y_Sigma.txt`, `univar_Y_zc.txt`
-   * `multivar_X-Y_cls.txt`, `multivar_X-Y_pi.txt`, `multivar_X-Y_Sigma.txt`, `multivar_X-Y_zc.txt`
-   
-   The `*_cls.txt` file contains the cluster label for each variant, where a label of -1 denotes the nearly-zero effect that is not considered in the clustering, and the cluster labels start from index 0. 
-   The `*_pi.txt` file contains the mixing coefficient $\pi$ of the clusters.
-   The `*_Sigma.txt` file contains the covariance matrices of clusters. Each line records the covariance of one cluster, and if it's multivariate, the matrix is flattened in row-major order with entries separated by comma.
-   The `*_zc.txt` file contains a single value used as the zero-cutoff for the regularized effect values for determining which variants to be included in the clustering: Only variants with effects greater than this value are considered. This value is dynamically determined by the total number of variants so that a reasonable proportion of them are ''non-zero''.
-4. Visualization of clustering results: 
-   * `clustering_multivar_X-Y.png`
-   * `clustering_univar_X.png`
-   * `clustering_univar_Y.png`
-   
-   Variants are colored by clusters, and Gaussians inferred for each cluster are shown along the side in the same colors (for up to 2D Gaussian). 
-5. Enrichment results:
-   * `enrichment_X.csv`
-   * `enrichment_Y.csv`
-   
-   Each result file has the same rows as in input  `gene_file`, with 3 additional columns, 'P', 'STAT', and 'VAR', corresponding to the p-value, test statistics, and variance of test statistics of the gene-level enrichment test. If the dependency package *chiscore* can not be installed successfully, that is, gene-level test is not available, then p-values will all be set to 1 by default, and a warning message *"Unable to import chiscore. Please install chiscore package separately"* will pop up when running the program. 
-   * `multivar_gene_X-Y.csv`
-   
-   The multivariate gene-level result file contains the same rows as in input  `gene_file`, with a couple additional columns:
-     * 'size' is the same as 'N_SNPS', denoting the number of variants considered for the gene.
-     * 'cls1_frac', ..., 'cls*K*_frac' (*K* columns): the fraction of variants in each gene that belong to each cluster, from cluster 1 to cluster *K*.
-     * 'b1b1', 'b1b2', 'b2b2', etc. (*K(K+1)/2* columns): sum of the product of regularized effects for each pair of traits (including a trait to itself) for all variants in the gene, divided by the gene size. 
-   
-6. Visualization of enrichment results:
-   * `enrichment_X.png`
-   * `enrichment_Y.png` 
-   
-   The manhattan plot shows negative log of adjusted p-values for each gene along the genome.
-
-Users may generate other visualizations or perform downstream analyses using the result provided in these files. 
 
 ----
 **Citation**
