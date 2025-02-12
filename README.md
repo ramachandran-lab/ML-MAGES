@@ -130,7 +130,7 @@ ML-MAGES/
     └── clustering_*.png                                                  # visualization of clustering results (up to bivariate)
     ```
   
-  - **Example Configuration** (from `run_single_example.sh`):  
+  - **Command** (from `run_single_example.sh`):  
     ```bash
     python -u single_example.py \
     --gwa_files $gwa_files --traits $traits \
@@ -173,7 +173,7 @@ ML-MAGES/
     └── clustering_*.png                                                  # visualization of clustering results (up to bivariate)
     ```
 
-  - **Example Configuration** (from `run_ml_mages.sh`):  
+  - **Command** (from `run_ml_mages.sh`):  
     ```bash
     python -u ml_mages.py \
     --gwa_files $gwa_files --traits $traits \
@@ -253,7 +253,7 @@ ML-MAGES/
     output_file               # indices of the breakpoints (right-boundary-only) to split the LD, with one index on each line
     ```
 
-  - **Example Configuration** (from `split_and_process_ld.sh`):  
+  - **Command** (from `split_and_process_ld.sh`):  
     ```bash
     python -u split_ld_blocks.py \
     --full_ld_file $full_ld_file \
@@ -299,7 +299,7 @@ ML-MAGES/
     └── block*.ld                                     # visualization of clustering results (up to bivariate)
     ```
 
-  - **Example Configuration** (from `?.sh`):  
+  - **Command** (from `split_and_process_ld.sh`):  
     ```bash
     python -u process_ld_blocks_and_gwa.py \
     --chrs $chrs \
@@ -338,7 +338,7 @@ ML-MAGES/
     └── b.png                                     # visualization of clustering results (up to bivariate)
     ```
 
-  - **Example Configuration** (from `?.sh`):  
+  - **Command** (from `?.sh`):  
     ```bash
     python -u ?.py \
     ```
@@ -369,7 +369,7 @@ ML-MAGES/
     └── b.png                                     # visualization of clustering results (up to bivariate)
     ```
 
-  - **Example Configuration** (from `?.sh`):  
+  - **Command** (from `?.sh`):  
     ```bash
     python -u ?.py \
     ```
@@ -400,7 +400,7 @@ ML-MAGES/
     └── b.png                                     # visualization of clustering results (up to bivariate)
     ```
 
-  - **Example Configuration** (from `?.sh`):  
+  - **Command** (from `?.sh`):  
     ```bash
     python -u ?.py \
     ```
@@ -464,7 +464,7 @@ Name of the model files follows ''Fc*a*top*b*_*c*.model'', where *a* is the numb
 
 
 ----
-**Citation**
+## Citation
 
 [1] Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
 
