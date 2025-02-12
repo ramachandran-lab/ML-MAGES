@@ -1,4 +1,4 @@
-chiscore==0.2.3
+chiscore==0.2.3  #Optional: if installation fails, an alternative implementation of enrichment test will be used.
 matplotlib==3.8.1
 numpy==2.2.2
 pandas==2.2.3
