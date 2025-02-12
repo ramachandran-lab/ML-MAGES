@@ -94,14 +94,6 @@ ML-MAGES/
 └── output/                      # (Empty by default: Output of run_ml_mages.sh)
 ```
 
-### Key Components  
-| File/Directory             | Purpose                                       |
-|----------------------------|-----------------------------------------------|
-| `run_single_example.sh`    | Demo pipeline for running a single model      |
-| `run_ml_mages.sh`          | Demo pipeline for running ensemble models     |
-| `example_data/`            | Contains data used for `run_single_example.sh`|
-| `trained_model/`           | Pre-trained effect shrinkage models           |
-
 ---
 
 ## Usage of Functions
