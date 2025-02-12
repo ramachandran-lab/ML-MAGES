@@ -37,8 +37,8 @@ This isolates the tool's dependencies from system-wide Python installations, avo
    python -u single_example.py --gwa_files $gwa_files --traits $traits --ld_path $ld_path  --ld_block_file $ld_block_file --gene_file $gene_file --model_path $model_path  --n_layer $n_layer  --top_r $top_r --output_path $output_path
   ```
 * **[Main]** To run the method with ensemble of pre-trained models (trained using synthetic data based on imputation data) on real data (partially included) or on your own data, follow the commands in [`run_ml_mages.sh`](code/run_ml_mages.sh).
-   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the gene annotation metadata file (see [below](#TODO) for detailed data contents).
-   * Format the data as required by the input arguments for `ml_mages.py` (see [below](#TODO) for details).
+   * Pre-process the data to generate the 1) summary statistics and 2) LD files, as well as 3) the gene annotation metadata file (see [below](#contents-of-data-folder) for detailed data contents).
+   * Format the data as required by the input arguments for `ml_mages.py` (see [below](#detailed-input-requirements) for details).
    * Then run the command
    ```bash
    python -u ml_mages.py \
@@ -48,11 +48,19 @@ This isolates the tool's dependencies from system-wide Python installations, avo
    --model_path $model_path --n_layer $n_layer --top_r $top_r \
    --output_path $output_path 
    ```
+   * Details of output files can be found [here](#detailed-output-information).
 * To preprocess LD data (and optionally GWA results) (of each individual chromosome), follow [`split_and_process_ld.sh`](code/`split_and_process_ld.sh`).
 * To train your own shrinkage models, follow [`simulate_train.sh`](code/simulate_train.sh) to generate synthetic data and [`train_model.sh`](code/train_model.sh) to train the models.
 * To generate new synthetic data for performance evaluation, follow [`simulate_evaluation.sh`](code/simulate_evaluation.sh).
 * [`demo_vis_outputs.ipynb`](demo_vis_outputs.ipynb) provides an example of visualizing multi-trait analysis results, but users are free to explore any possible downstream using the results.
 * [`demo_eval_perf.ipynb`](demo_eval_perf.ipynb) provides an example for performance evaluation using the synthetic data, but users are free to explore any other evaluation metrics. 
+
+The structure of the rest of this manual goes as follows:
+* [Contents of the Repository](#contents-of-the-repository)
+* [Usage of Functions](#usage-of-functions)
+* [Data](#data)
+* [Models](#models)
+  
 
 ## Contents of the Repository
 
