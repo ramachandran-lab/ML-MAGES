@@ -1,5 +1,5 @@
 # ML-MAGES
-Last Updated: 2/11/2025
+Last Updated: 2/14/2025
 
 This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate
 genetic association analyses with genes and effect size shrinkage__ [1]
@@ -548,6 +548,6 @@ Name of the model files follows ''Fc*a*top*b*_*c*.model'', where *a* is the numb
 ----
 ## Citation
 
-[1] Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025)
+[1] Liu X, Crawford L, Ramachandran S. ML-MAGES: Machine learning approaches for multivariate genetic association analyses with genes and effect size shrinkage. (accepted at RECOMB 2025) [[link to preprint](https://doi.org/10.1101/2025.02.11.637655)]
 
 For questions and comments, please contact the author at *xiran_liu1 at brown dot edu*.
