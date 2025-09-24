@@ -1,0 +1,10 @@
+trained_models/s=-0.25,w=0_top15_2L_0.model
+trained_models/s=-0.25,w=0_top15_2L_1.model
+trained_models/s=-0.25,w=0_top15_2L_2.model
+trained_models/s=-0.25,w=0_top15_2L_3.model
+trained_models/s=-0.25,w=0_top15_2L_4.model
+trained_models/s=-0.25,w=0_top15_2L_5.model
+trained_models/s=-0.25,w=0_top15_2L_6.model
+trained_models/s=-0.25,w=0_top15_2L_7.model
+trained_models/s=-0.25,w=0_top15_2L_8.model
+trained_models/s=-0.25,w=0_top15_2L_9.model

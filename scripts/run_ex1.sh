@@ -1,0 +1,11 @@
+python -m mlmages \
+--chroms 22 \
+--gwas_files data/gwas/gwas_HDL.csv data/gwas/gwas_LDL.csv \
+--model_files example_files/model_files.txt \
+--full_ld_files example_files/full_ld_files.txt \
+--gene_file data/genes/genes.csv \
+--trait_names HDL LDL \
+--split_ld True \
+--ldblock_dir data/ld_blocks/ \
+--avg_block_size 1000 \
+--output_dir output
