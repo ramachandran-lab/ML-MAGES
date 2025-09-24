@@ -1,9 +1,10 @@
 output/*
-data/*
-!data/genes/genes.csv
-!data/gwas/*
-!data/ld_blocks/chr22*.ld
-!data/*chr22*
+data/ld_blocks/chr1*
+data/ld_blocks/chr20*
+data/ld_blocks/chr21*
+data/ld_blocks/*chr1*
+data/ld_blocks/*chr20*
+data/ld_blocks/*chr21*
 example_files/*
 !example_files/model_files.txt
 !example_files/full_ld_files.txt
