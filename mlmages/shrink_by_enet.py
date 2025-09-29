@@ -2,19 +2,17 @@ import os
 import numpy as np
 import pandas as pd
 import time
-import argparse
-import torch
+from sklearn.linear_model import ElasticNetCV
+from sklearn import preprocessing
 
-from ._train_funcs import *
-from ._sim_funcs import get_topr_idx_from_ld
+import argparse
+
 from ._util_funcs import disp_params, parse_file_list, load_gwas_file, parse_model_file
 
 
-def shrink_by_mlmages(gwas_file, ld_files, model_files, output_file, chroms=None):
+def shrink_by_enet(gwas_file, ld_files, output_file, chroms=None):
 
     ld_files = parse_file_list(ld_files)
-    model_files = parse_file_list(model_files)
-    assert len(model_files)>0, "No model files found!"
     if chroms is None or len(chroms)==0:
         chroms = list(range(1,23))
     else:
@@ -27,25 +25,6 @@ def shrink_by_mlmages(gwas_file, ld_files, model_files, output_file, chroms=None
         print("Created output directory:", os.path.dirname(output_file))
     print("--------------------------------------------------")
 
-    n_models = len(model_files)
-    model_file = model_files[0]
-    top_r, n_layer = parse_model_file(model_file)
-    model_label = "top{}_{}L".format(top_r,n_layer)
-    print("Using top {} variants and {}-layer model".format(top_r,n_layer))
-    print("Number of models in ensemble:", n_models)
-    print("Model label:", model_label)
-
-    # load models
-    n_feature = get_n_feature(top_r)
-    NN_models = list()
-    for model_idx in range(n_models):
-        model = FCNN(n_feature, n_layer=n_layer, model_label="top{}_{}L".format(top_r,n_layer))
-        model_path = os.path.join(model_files[model_idx])
-        state = torch.load(model_path)
-        model.load_state_dict(state)
-        model.eval()
-        NN_models.append(model)
-    
     # load GWAS results
     print("Loading GWAS results from", gwas_file)
     _, beta, se = load_gwas_file(gwas_file, chroms=chroms)
@@ -68,50 +47,42 @@ def shrink_by_mlmages(gwas_file, ld_files, model_files, output_file, chroms=None
 
     # apply ML-MAGES effect size shrinkage
     tic = time.time()
-    beta_mlmages = list()
+    beta_enet = list()
     for i_ld,ld_file in enumerate(ld_files):
         ld = ld_list[i_ld]
         lb, ub = bound_list[i_ld]
         print("Shrinking SNPs {}-{} (LD file: {})".format(lb,ub,ld_file))
 
-        # compute LD score and get top r (within the block)
-        idx_max_ldsc, top_r_val, ldsc = get_topr_idx_from_ld(ld, top_r)
-        top_r_beta = beta[idx_max_ldsc]
-        # construct features
-        X = np.concatenate([beta[lb:ub,None],se[lb:ub,None],ldsc[:,None],top_r_beta,top_r_val], axis=1)
-        # predict using ensemble of models
-        y_pred_ensemble = list()
-        for model in NN_models:
-            with torch.no_grad():
-                y_pred = model(torch.tensor(X, dtype=torch.float32))
-                y_pred = y_pred.numpy().squeeze()
-            y_pred_ensemble.append(y_pred)
-        y_pred_ensemble = np.stack(y_pred_ensemble).mean(axis=0)
-        beta_mlmages.append(y_pred_ensemble)
+        X_input = preprocessing.normalize(ld)
+        y_input = beta[lb:ub]
+        regr = ElasticNetCV(cv = 5, l1_ratio=0.5, n_alphas=10, eps=1e-2, random_state=42, fit_intercept=False).fit(X_input,y_input)
+        y_output = regr.coef_ 
+        
+        beta_enet.append(y_output)
 
-    beta_mlmages = np.concatenate(beta_mlmages)
+    beta_enet = np.concatenate(beta_enet)
     toc = time.time()
     print("Time:",toc-tic)
 
     print("Saving results to", output_file)
-    np.savetxt(output_file, beta_mlmages)
+    np.savetxt(output_file, beta_enet)
 
 
 def main():
-    print("RUNNING: shrink_by_mlmages")
+    print("RUNNING: shrink_by_enet")
 
-    parser = argparse.ArgumentParser(description='Apply trained ML-MAGES models to shrink GWA effects')
+    parser = argparse.ArgumentParser(description='Apply ENet to shrink GWA effects')
     # Required arguments
     parser.add_argument('--gwas_file', type=str, help="GWAS file")
     parser.add_argument("--ld_files", nargs="+", default=[], help="List of LD block files (in order), or a file containing one filename per line")
-    parser.add_argument('--model_files', nargs="+", default=[], help="List of model files (in order), or a file containing one filename per line")
     parser.add_argument('--output_file', type=str, help='Output file name to save shrinkage results')
     # Optional arguments
     parser.add_argument('--chroms', type=int, nargs="*", default=None, help="Chromosome numbers (0–22). If not provided, all chromosomes will be used.")
     
     args = parser.parse_args()
+
     disp_params(args, title="INPUT SETTINGS")
-    shrink_by_mlmages(**vars(args))
+    shrink_by_enet(**vars(args))
 
 
 if __name__ == "__main__":

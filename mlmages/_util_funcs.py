@@ -1,17 +1,28 @@
 import os
 import re
 import numpy as np
+import pandas as pd
 import scipy as sp
 import scipy.stats as stats
 import itertools
+from sklearn.metrics import precision_recall_curve, roc_auc_score, average_precision_score, r2_score
 import argparse
-from sklearn.metrics import roc_curve, precision_recall_curve, roc_auc_score, average_precision_score, r2_score, precision_recall_fscore_support
 
-import pandas as pd
-import numpy as np
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+    
 
 def binary_combinations(n: int):
     return [comb for comb in itertools.product([0,1], repeat=n) if any(comb)]
+
 
 def disp_params(args: argparse.Namespace, title: str = ""):
     print(f" {title} ".center(50, '='))
@@ -63,6 +74,22 @@ def load_gwas_file(gwas_file: str, chroms=[]):
     return gwas_results, beta, se
 
 
+def load_ld_files(ld_files: list[str]) -> np.ndarray:
+    ld_list = list()
+    ld_sum = 0
+    for ld_file in ld_files:
+        assert os.path.isfile(ld_file), "LD file {} not found!".format(ld_file)
+        ld = np.loadtxt(ld_file, dtype=float)
+        ld_sum += ld.shape[0]
+        ld_list.append(ld)
+    ld_all = np.zeros((ld_sum,ld_sum), dtype=float)
+    start = 0
+    for ld in ld_list:
+        ld_all[start:(start+ld.shape[0]), start:(start+ld.shape[0])] = ld
+        start += ld.shape[0]
+    return ld_all
+
+
 def parse_model_file(model_file):
     # strip directory + extension
     basename = os.path.splitext(os.path.basename(model_file))[0]
@@ -104,13 +131,17 @@ def scale_by_quantile(x:np.ndarray, ref:np.ndarray, q=0.01) -> np.ndarray:
     
     return x_scaled
 
-def scale_laplace(data_to_scale:np.ndarray, loc_ref:float, scale_ref:float) -> np.ndarray:
+def scale_laplace(data_to_scale:np.ndarray, loc_ref:float, scale_ref:float, kappa: None) -> np.ndarray:
     # get ECDF of the simulated data
     sim_ecdf = sp.stats.ecdf(data_to_scale.flatten()).cdf
     # scale betas
     data_trans_probs = sim_ecdf.evaluate(data_to_scale)
-    data_trans = sp.stats.laplace.ppf(data_trans_probs, loc=loc_ref, scale=scale_ref)
+    if kappa is None:
+        data_trans = sp.stats.laplace.ppf(data_trans_probs, loc=loc_ref, scale=scale_ref)
+    else:
+        data_trans = stats.laplace_asymmetric.ppf(data_trans_probs, kappa=kappa, loc=loc_ref, scale=scale_ref)
     data_trans[np.isinf(data_trans)] = np.nanmax(data_trans[~np.isinf(data_trans)])
+
     return data_trans
 
 
@@ -134,110 +165,6 @@ def scale_true_beta(true_betas:np.ndarray, obs_betas:np.ndarray, scaled_obs_beta
     scaled_true_betas = np.multiply(tb,scales)
     
     return scaled_true_betas.squeeze()    
-
-
-def evaluate_perf(y_true:np.ndarray, y_pred:np.ndarray) -> dict:
-    assert(y_true.shape==y_pred.shape)
-    # RMSE
-    sqr_err = (y_true-y_pred)**2
-    rmse = np.sqrt(np.mean(sqr_err, axis=0))
-    # weighted RMSE
-    is_true_nz = y_true!=0
-    frac_true_nz = np.sum(is_true_nz, axis=0)/y_true.shape[0]
-    weighted_mean_sum_sqr_err = [(np.mean(sqr_err[is_true_nz[:,i],i])*(1-frac_true_nz[i]) + np.mean(sqr_err[~is_true_nz[:,i],i])*frac_true_nz[i]) for i in range(y_true.shape[1])]
-    wrmse = np.sqrt(weighted_mean_sum_sqr_err)
-    # others
-    p_corr = [np.corrcoef(y_true[:,idx],y_pred[:,idx])[0,1] for idx in range(y_pred.shape[1])]
-    auc = [np.nan for idx in range(y_pred.shape[1])]
-    r2 = [np.nan for idx in range(y_pred.shape[1])]
-    try:
-        auc = [roc_auc_score(y_true[:,idx]!=0,np.abs(y_pred[:,idx])) for idx in range(y_pred.shape[1])]
-        r2 = [r2_score(y_true[:,idx],y_pred[:,idx]) for idx in range(y_pred.shape[1])]
-    except: 
-        print("all labels are the same")
-    
-    ap = [average_precision_score(y_true[:,idx]!=0,np.abs(y_pred[:,idx])) for idx in range(y_pred.shape[1])]
-
-    return {'rmse': rmse, 'wrmse': wrmse, 'p_corr': np.array(p_corr),
-           'auc': np.array(auc), 'r2': np.array(r2), 'ap': np.array(ap)}
-
-def compute_mean_prec(y_true:np.ndarray, y_pred:np.ndarray, base_rec:np.ndarray) -> np.ndarray:
-    assert(y_true.shape==y_pred.shape)
-    tprs = []
-    precs = []
-    for idx in range(y_pred.shape[1]):
-        true_nz = y_true[:,idx]!=0
-        precision, recall, thresholds = precision_recall_curve(true_nz, np.abs(y_pred[:,idx]),drop_intermediate=True)
-        prec = np.interp(base_rec, recall[::-1], precision[::-1])
-        precs.append(prec)
-    precs = np.array(precs)
-    mean_precs = precs.mean(axis=0)
-    return mean_precs
-
-
-def transform_beta(real_data:np.ndarray, sim_data:np.ndarray, data_to_trans_list: list=[], asymmetric: bool=False) -> list:
-
-    if asymmetric:
-        kappa, loc_real, scale_real = stats.laplace_asymmetric.fit(real_data, floc=0)
-    else:
-        loc_real, scale_real = stats.laplace.fit(real_data, floc=0)
-    sim_ecdf = stats.ecdf(sim_data).cdf
-
-    data_trans_list = list()
-    for data_to_trans in data_to_trans_list:
-        data_trans_probs = sim_ecdf.evaluate(data_to_trans)
-        if asymmetric:
-            data_trans = stats.laplace_asymmetric.ppf(data_trans_probs, kappa=kappa, loc=loc_real, scale=scale_real)
-        else:
-            data_trans = stats.laplace.ppf(data_trans_probs, loc=loc_real, scale=scale_real)
-        is_pos_inf = np.logical_and(np.isinf(data_trans),data_trans>0)
-        is_neg_inf = np.logical_and(np.isinf(data_trans),data_trans<0)
-        data_trans[is_pos_inf] = np.nanmax(data_trans[~is_pos_inf])
-        data_trans[is_neg_inf] = np.nanmin(data_trans[~is_neg_inf])       
-        data_trans_list.append(data_trans)
-    
-    return data_trans_list
-
-
-def transform_data(X: np.ndarray, y: np.ndarray, beta_real: np.ndarray, se_real: np.ndarray, 
-                   top_r: int, asymmetric: bool=False):
-    
-    # scale X
-    X_scaled = np.zeros_like(X)
-    # scale beta
-    beta_sim = X[:,0]
-    beta_idx = np.concatenate([[0], np.arange(3,3+top_r)])
-    data_to_trans = X[:,beta_idx]
-    data_trans_list = transform_beta(beta_real,beta_sim,[data_to_trans],asymmetric=asymmetric)
-    data_trans = data_trans_list[0]
-    X_scaled[:,beta_idx] = data_trans
-    # scale se
-    X_scaled[:,1] = scale_by_quantile(X[:,1],se_real,q=0.01)
-    # keep LD the same
-    ld_idx = np.concatenate([[2], np.arange(3+top_r,3+2*top_r)]) # for LDs
-    X_scaled[:,ld_idx] = X[:,ld_idx]
-
-    sob = X_scaled[:,0]
-    ob = X[:,0]
-    sob_quantiles_range = np.quantile(sob, 0.9, axis=0)-np.quantile(sob, 0.1, axis=0)
-    ob_quantiles_range = np.quantile(ob, 0.9, axis=0)-np.quantile(ob, 0.1, axis=0)
-    # scales = np.divide(sob_quantiles_range,ob_quantiles_range)
-    scale = sob_quantiles_range/(ob_quantiles_range+1e-8)
-    y_scaled = y*scale
-
-    return X_scaled, y_scaled
-
-
-def angle_between(v1, v2, deg=False):
-    """Computes the angle in radians between two vectors."""
-    v1 = np.array(v1)
-    v2 = np.array(v2)
-    v1_u = v1 / np.linalg.norm(v1)
-    v2_u = v2 / np.linalg.norm(v2)
-    if deg:
-        return np.rad2deg(np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)))
-    else:
-        return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
 def get_eiginfo(Sigma: list[np.ndarray], comp_to_ref: bool=False):
@@ -291,3 +218,43 @@ def get_eiginfo(Sigma: list[np.ndarray], comp_to_ref: bool=False):
     
     return sigma_eiginfo
 
+
+
+def evaluate_perf(y_true:np.ndarray, y_pred:np.ndarray) -> dict:
+    assert(y_true.shape==y_pred.shape)
+    # RMSE
+    sqr_err = (y_true-y_pred)**2
+    rmse = np.sqrt(np.mean(sqr_err, axis=0))
+    # weighted RMSE
+    is_true_nz = y_true!=0
+    frac_true_nz = np.sum(is_true_nz, axis=0)/y_true.shape[0]
+    weighted_mean_sum_sqr_err = [(np.mean(sqr_err[is_true_nz[:,i],i])*(1-frac_true_nz[i]) + np.mean(sqr_err[~is_true_nz[:,i],i])*frac_true_nz[i]) for i in range(y_true.shape[1])]
+    wrmse = np.sqrt(weighted_mean_sum_sqr_err)
+    # others
+    p_corr = [np.corrcoef(y_true[:,idx],y_pred[:,idx])[0,1] for idx in range(y_pred.shape[1])]
+    auc = [np.nan for idx in range(y_pred.shape[1])]
+    r2 = [np.nan for idx in range(y_pred.shape[1])]
+    try:
+        auc = [roc_auc_score(y_true[:,idx]!=0,np.abs(y_pred[:,idx])) for idx in range(y_pred.shape[1])]
+        r2 = [r2_score(y_true[:,idx],y_pred[:,idx]) for idx in range(y_pred.shape[1])]
+    except: 
+        print("all labels are the same")
+    
+    ap = [average_precision_score(y_true[:,idx]!=0,np.abs(y_pred[:,idx])) for idx in range(y_pred.shape[1])]
+
+    return {'rmse': rmse, 'wrmse': wrmse, 'p_corr': np.array(p_corr),
+           'auc': np.array(auc), 'r2': np.array(r2), 'ap': np.array(ap)}
+
+
+def compute_mean_prec(y_true:np.ndarray, y_pred:np.ndarray, base_rec:np.ndarray) -> np.ndarray:
+    assert(y_true.shape==y_pred.shape)
+    tprs = []
+    precs = []
+    for idx in range(y_pred.shape[1]):
+        true_nz = y_true[:,idx]!=0
+        precision, recall, thresholds = precision_recall_curve(true_nz, np.abs(y_pred[:,idx]),drop_intermediate=True)
+        prec = np.interp(base_rec, recall[::-1], precision[::-1])
+        precs.append(prec)
+    precs = np.array(precs)
+    mean_precs = precs.mean(axis=0)
+    return mean_precs

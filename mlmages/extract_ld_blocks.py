@@ -61,22 +61,10 @@ def main():
     parser.add_argument('--res_prefix', type=str, default="", help="Result prefix")
 
     args = parser.parse_args()
-    args._description = parser.description
-
     disp_params(args, title="INPUT SETTINGS")
     extract_ld_blocks(**vars(args))
     
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Extract LD blocks from a full LD.")
-    # # required args
-    # parser.add_argument('--ld_file', type=str, help="Full LD file")
-    # parser.add_argument('--ldblock_path', type=str, help="Path to save LD block files")
-    # parser.add_argument('--block_meta_file', type=str, help="Meta file of block LDs")
-    # # optional args
-    # parser.add_argument('--avg_block_size', type=int, default=1000, help="Average number of SNPs per block")
-    # parser.add_argument('--res_prefix', type=str, default="", help="Result prefix")
 
-    # args = parser.parse_args()
-    # args._description = parser.description
     main()

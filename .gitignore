@@ -9,6 +9,10 @@ example_files/*
 !example_files/model_files.txt
 !example_files/full_ld_files.txt
 !example_files/chr20-22_full_ld_files.txt
+!example_files/chr22_ld_files.txt
+!example_files/ld_files.txt
+data/af/*
+data/ld_score/*
 mlmages/__pycache__/*
 mlmages/test.py
 mlmages/ex_bivar.py

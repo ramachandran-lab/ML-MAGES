@@ -1,6 +1,3 @@
-# module load python/3.11.0s-ixrhc3q
-# source ~/pytorch.venv/bin/activate
-
 python -m mlmages  \
 --chroms 20 21 22 \
 --gwas_files data/gwas/gwas_MCV.csv data/gwas/gwas_MPV.csv data/gwas/gwas_PLC.csv \

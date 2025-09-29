@@ -12,20 +12,11 @@ from .cluster_shrinkage import cluster_shrinkage
 from .univar_enrich import univar_enrich
 from .multivar_gene_analysis import multivar_gene_analysis
 
-from ._util_funcs import disp_params, parse_file_list, binary_combinations
+from ._util_funcs import disp_params, parse_file_list, binary_combinations, str2bool
 from ._plot_funcs import plot_inf_cls, plot_data_cls, plot_inf_cls_bivar, plot_data_cls_bivar, plot_data_cls_trivar, plot_inf_cls_trivar, plot_effects, plot_pvals
 
 
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ("yes", "true", "t", "y", "1"):
-        return True
-    elif v.lower() in ("no", "false", "f", "n", "0"):
-        return False
-    else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
-    
+
 
 def main(args):
     
@@ -51,83 +42,82 @@ def main(args):
         chrom_label = "{}-{}".format(args.chroms[0], args.chroms[-1])
     print("Chromosomes to be used:", chrom_label)
 
-    # # --- 0. Extract LD blocks per chromosome ---
-    # if args.split_ld:
-    #     print(full_ld_files)
-    #     assert len(full_ld_files) == len(args.chroms), "Number of full LD files must match number of chromosomes!"
-        # os.makedirs(args.ldblock_dir, exist_ok=True)
+    # --- 0. Extract LD blocks per chromosome ---
+    if args.split_ld:
+        print(full_ld_files)
+        assert len(full_ld_files) == len(args.chroms), "Number of full LD files must match number of chromosomes!"
+        os.makedirs(args.ldblock_dir, exist_ok=True)
         
-    #     for i_chrom,chrom in enumerate(args.chroms):
-    #         ld_file = full_ld_files[i_chrom]
-    #         block_meta_file = os.path.join(args.ldblock_dir, f"block_meta_chr{chrom}.csv")
-    #         res_prefix = f"chr{chrom}"
-    #         print(f"Extracting LD blocks for chromosome {chrom} from {ld_file} ...")
-    #         print(f"Block meta file: {block_meta_file}")
+        for i_chrom,chrom in enumerate(args.chroms):
+            ld_file = full_ld_files[i_chrom]
+            block_meta_file = os.path.join(args.ldblock_dir, f"block_meta_chr{chrom}.csv")
+            res_prefix = f"chr{chrom}"
+            print(f"Extracting LD blocks for chromosome {chrom} from {ld_file} ...")
+            print(f"Block meta file: {block_meta_file}")
 
-    #         extract_ld_blocks(
-    #             ld_file=ld_file,
-    #             ldblock_path=args.ldblock_dir,
-    #             block_meta_file=block_meta_file,
-    #             avg_block_size=args.avg_block_size,
-    #             res_prefix=res_prefix
-    #         )
+            extract_ld_blocks(
+                ld_file=ld_file,
+                ldblock_path=args.ldblock_dir,
+                block_meta_file=block_meta_file,
+                avg_block_size=args.avg_block_size,
+                res_prefix=res_prefix
+            )
 
-    #     # --- 0b. Create LD files list for later use (one per chromosome) ---
+        # --- 0b. Create LD files list for later use (one per chromosome) ---
         
-    #     if len(args.chroms)==1:
-    #         chrom = args.chroms[0]
-    #         ld_files_list_path = os.path.join(intermediate_dir, f"chr{chrom}_ld_files.txt")
-    #         all_block_files = [os.path.join(args.ldblock_dir, f) for f in os.listdir(args.ldblock_dir)
-    #                         if f.startswith(f"chr{chrom}_block") and f.endswith(".ld")]
-    #         # Sort by block number
-    #         all_block_files.sort(key=lambda x: int(os.path.basename(x).split("_block")[1].split(".ld")[0]))
-    #         with open(ld_files_list_path, "w") as f:
-    #             for file_path in all_block_files:
-    #                 f.write(f"{file_path}\n")
-    #         print(f"Created LD file list: {ld_files_list_path}")
-    #     else:
-    #         ld_files_list_path = os.path.join(intermediate_dir, f"chr{chrom_label}_ld_files.txt")
-    #         with open(ld_files_list_path, "w") as f:
-    #             for chrom in args.chroms:
-    #                 all_block_files = [os.path.join(args.ldblock_dir, f) for f in os.listdir(args.ldblock_dir)
-    #                                 if f.startswith(f"chr{chrom}_block") and f.endswith(".ld")]
-    #                 # Sort by block number
-    #                 all_block_files.sort(key=lambda x: int(os.path.basename(x).split("_block")[1].split(".ld")[0]))
-    #                 for file_path in all_block_files:
-    #                     f.write(f"{file_path}\n")
-    #         print(f"Created LD file list: {ld_files_list_path}")
+        if len(args.chroms)==1:
+            chrom = args.chroms[0]
+            ld_files_list_path = os.path.join(intermediate_dir, f"chr{chrom}_ld_files.txt")
+            all_block_files = [os.path.join(args.ldblock_dir, f) for f in os.listdir(args.ldblock_dir)
+                            if f.startswith(f"chr{chrom}_block") and f.endswith(".ld")]
+            # Sort by block number
+            all_block_files.sort(key=lambda x: int(os.path.basename(x).split("_block")[1].split(".ld")[0]))
+            with open(ld_files_list_path, "w") as f:
+                for file_path in all_block_files:
+                    f.write(f"{file_path}\n")
+            print(f"Created LD file list: {ld_files_list_path}")
+        else:
+            ld_files_list_path = os.path.join(intermediate_dir, f"chr{chrom_label}_ld_files.txt")
+            with open(ld_files_list_path, "w") as f:
+                for chrom in args.chroms:
+                    all_block_files = [os.path.join(args.ldblock_dir, f) for f in os.listdir(args.ldblock_dir)
+                                    if f.startswith(f"chr{chrom}_block") and f.endswith(".ld")]
+                    # Sort by block number
+                    all_block_files.sort(key=lambda x: int(os.path.basename(x).split("_block")[1].split(".ld")[0]))
+                    for file_path in all_block_files:
+                        f.write(f"{file_path}\n")
+            print(f"Created LD file list: {ld_files_list_path}")
 
     
-    
-    # # --- 1. Shrinkage and univariate clustering per trait ---
-    # for trait, gwas_file in zip(args.trait_names, args.gwas_files):
-    #     # for chrom in args.chroms:
-    #     if args.split_ld:
-    #         ld_files_list = [os.path.join(intermediate_dir, f"chr{chrom_label}_ld_files.txt")]
-    #     else:
-    #         assert len(full_ld_files) == len(args.chroms), "Number of full LD files must match number of chromosomes!"
-    #         ld_files_list = [full_ld_files[i] for i, c in enumerate(args.chroms)]
+    # --- 1. Shrinkage and univariate clustering per trait ---
+    for trait, gwas_file in zip(args.trait_names, args.gwas_files):
+        # for chrom in args.chroms:
+        if args.split_ld:
+            ld_files_list = [os.path.join(intermediate_dir, f"chr{chrom_label}_ld_files.txt")]
+        else:
+            assert len(full_ld_files) == len(args.chroms), "Number of full LD files must match number of chromosomes!"
+            ld_files_list = [full_ld_files[i] for i, c in enumerate(args.chroms)]
 
-    #     shrink_output = os.path.join(shrink_dir, f"shrink_{trait}_chr{chrom_label}.txt")
-    #     shrink_by_mlmages(gwas_file, ld_files_list, args.model_files, shrink_output, chroms=args.chroms)
+        shrink_output = os.path.join(shrink_dir, f"shrink_{trait}_chr{chrom_label}.txt")
+        shrink_by_mlmages(gwas_file, ld_files_list, args.model_files, shrink_output, chroms=args.chroms)
 
-    #     # Univariate clustering
-    #     shrinkage_trait_files = {
-    #         "shrinkage_trait1_files": [shrink_output],
-    #     }
-    #     cluster_output = os.path.join(cluster_dir, f"{trait}_chr{chrom_label}")
-    #     cluster_shrinkage(shrinkage_trait_files, cluster_output)
+        # Univariate clustering
+        shrinkage_trait_files = {
+            "shrinkage_trait1_files": [shrink_output],
+        }
+        cluster_output = os.path.join(cluster_dir, f"{trait}_chr{chrom_label}")
+        cluster_shrinkage(shrinkage_trait_files, cluster_output)
 
-    #     # Enrichment analysis
-    #     enrich_output = os.path.join(enrich_dir, f"{trait}_gene_enrich_chr{chrom_label}.txt")
-    #     univar_enrich(
-    #         output_file=enrich_output,
-    #         gene_file=args.gene_file,
-    #         shrinkage_file=shrink_output,
-    #         clustering_file_prefix=cluster_output,
-    #         ld_files=args.full_ld_files,
-    #         chroms=args.chroms
-    #     )
+        # Enrichment analysis
+        enrich_output = os.path.join(enrich_dir, f"{trait}_gene_enrich_chr{chrom_label}.txt")
+        univar_enrich(
+            output_file=enrich_output,
+            gene_file=args.gene_file,
+            shrinkage_file=shrink_output,
+            clustering_file_prefix=cluster_output,
+            ld_files=args.full_ld_files,
+            chroms=args.chroms
+        )
             
     # --- 2. Multivariate clustering for all traits (if available) ---
     if len(args.trait_names) >= 2:

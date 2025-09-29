@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import pandas as pd
 import time
 import argparse
 
@@ -8,7 +7,7 @@ from ._cls_funcs import *
 from ._util_funcs import disp_params, parse_file_list
 
 
-def cluster_shrinkage(shrinkage_files, output_file, K=20, n_runs=25):
+def cluster_shrinkage(shrinkage_files, output_file, K=20, n_runs=25, max_nz=0):
 
     print("Running infinite mixture with K={} and {} runs.".format(K, n_runs))
 
@@ -26,7 +25,13 @@ def cluster_shrinkage(shrinkage_files, output_file, K=20, n_runs=25):
     print("Shape of effect sizes loaded:", beta_reg.shape)
     
     # perform clustering
-    max_nz = beta_reg.shape[0]//5
+    if max_nz==0:
+        max_nz = beta_reg.shape[0]//5 if beta_reg.shape[0]>15000 else beta_reg.shape[0]//3
+    elif max_nz<0:
+        max_nz = beta_reg.shape[0]
+    else:
+        max_nz = max_nz
+        assert max_nz<beta_reg.shape[0], "max_nz should be less than the number of SNPs!"
     cutoff = 1e-3 if beta_reg.shape[0]>50000 else 1e-4
     betas_nz, zero_cutoff = adjust_zero_threshold(beta_reg, init_zero_cutoff=cutoff, any_zero=True, 
                                                   min_nz=1000, max_nz=max_nz, adjust_scale=2, max_iter=10)
@@ -64,6 +69,8 @@ def main():
     # # Optional arguments
     parser.add_argument('--K', type=int, default=20, help='Default K in the infinite mixture')
     parser.add_argument('--n_runs', type=int, default=25, help='Number of runs of the infinite mixture')
+    parser.add_argument('--max_nz', type=int, default=0, help='Maximum number of non-zero effects allowed (default: n/5 if n>15000 else n/3); if negative, allowing all SNPs')
+    
     
     # Handle dynamic trait file arguments
     args, unknown = parser.parse_known_args()
@@ -94,7 +101,6 @@ def main():
     print("--------------------------------------------------")
 
     cluster_shrinkage(**vars(args))
-    # cluster_shrinkage(args.shrinkage_files, args.output_file, K=args.K, n_runs=args.n_runs)
 
 
 if __name__ == "__main__":

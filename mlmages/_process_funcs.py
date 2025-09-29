@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
 import scipy.signal as sig
-
-# from numpy.typing import NDArray
 from typing import Tuple
 
 def construct_antidiagonal_sum_vec(ld: np.ndarray) -> np.ndarray:

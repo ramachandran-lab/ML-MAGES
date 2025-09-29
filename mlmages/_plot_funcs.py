@@ -74,36 +74,6 @@ def plot_pvals(pvals: np.ndarray, names=[], chr_is_odd=None, chr_switch_idx=None
     return fig
 
 
-# def plot_regularized_effects(beta_reg_list: list[np.ndarray], beta_obs: np.ndarray, 
-#                              chr_is_odd: np.ndarray, chr_switch_idx: np.ndarray, 
-#                              pheno: str="", method_list: list[str]=[""], sharey: bool=True, marker_s: int=1):
-#     nsnp = len(beta_obs)
-
-#     fig, axes = plt.subplots(1+len(beta_reg_list),1,figsize=(10,1.5+1.5*len(beta_reg_list)), sharex=True, sharey=sharey, dpi=200)
-#     axes[0].scatter(np.arange(nsnp)[chr_is_odd], beta_obs[chr_is_odd], 
-#                     s=marker_s, alpha=0.7, color='#999999',linewidth=0,)
-#     axes[0].scatter(np.arange(nsnp)[~chr_is_odd], beta_obs[~chr_is_odd], 
-#                     s=marker_s, alpha=0.7, color='#404040',linewidth=0,)
-#     axes[0].set_title(f"{pheno}: observed effects", loc="left", fontsize=10)
-#     for i_b, beta_reg in enumerate(beta_reg_list):
-#         axes[i_b+1].scatter(np.arange(nsnp)[chr_is_odd], beta_reg[chr_is_odd], 
-#                         s=marker_s, alpha=0.7, color='#999999',linewidth=0,)
-#         axes[i_b+1].scatter(np.arange(nsnp)[~chr_is_odd], beta_reg[~chr_is_odd], 
-#                         s=marker_s, alpha=0.7, color='#404040',linewidth=0,)
-#         axes[i_b+1].set_title(f"{pheno}: effects by {method_list[i_b]}", loc="left", fontsize=10)
-#     for ax in axes:
-#         ax.set_xlim(0,nsnp)
-#         for sw in chr_switch_idx:
-#             ax.axvline(x=sw, 
-#                        color='lightgray', ls='--', lw=0.5)
-#         ax.set_xlabel("")
-#         ax.set_xticks((chr_switch_idx[1:]+chr_switch_idx[:-1])/2)
-#         ax.set_xticklabels(np.arange(1,len(chr_switch_idx)))
-#     axes[-1].set_xlabel("CHR")
-    
-#     fig.tight_layout()
-#     return fig
-
 def plot_data_cls(df, x, hue, cls_perc, palette=None, ax=None, **kwargs):
     assert x in df.columns
     assert hue in df.columns
@@ -209,7 +179,7 @@ def plot_inf_cls_bivar(phenos, pred_K, Sigma, pi, xylim, nstd=np.sqrt(5.991), pa
         if (angle < 0):
             angle = angle + 2*np.pi
     
-        # Get the confidence interval error ellipse
+        # Get the covariance ellipse
         # np.sqrt(9.210) for 99% CI # np.sqrt(5.991) for 95% CI
         ell = Ellipse(xy=(0, 0), width=largest_s*nstd*2, height=smallest_s*nstd*2,
                       angle=np.rad2deg(angle), 
@@ -298,7 +268,7 @@ def plot_inf_cls_bivar_merged(phenos, pred_K, Sigma, pi, cls_cutoff, xylim, merg
         if (angle < 0):
             angle = angle + 2*np.pi
     
-        # Get the confidence interval error ellipse
+        # Get the covariance ellipse
         #np.sqrt(9.210) for 99% CI and np.sqrt(5.991) for 95% CI
         ell = Ellipse(xy=(0, 0), width=largest_s*nstd*2, height=smallest_s*nstd*2,
                       angle=np.rad2deg(angle), 
@@ -321,8 +291,6 @@ def plot_inf_cls_bivar_merged(phenos, pred_K, Sigma, pi, cls_cutoff, xylim, merg
     ax.set_ylabel(phenos[1])
 
     return ax
-
-
 
 
 def plot_data_cls_trivar(df, phenos, hue, cls_perc, xylim, palette=None, ax=None, view=(20, 30), **kwargs):

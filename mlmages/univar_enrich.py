@@ -70,7 +70,6 @@ def main():
     parser.add_argument('--ld_files', nargs="+", default=[], help='List of LD files (in order) of a trait, or a file containing one filename per line. Each file contains an LD matrix.')
     parser.add_argument('--chroms', type=int, nargs="*", default=None, help="Chromosome numbers (0–22). If not provided, all chromosomes will be used.")
     args = parser.parse_args()
-    args._description = parser.description
 
     disp_params(args, title="INPUT SETTINGS")
     if os.path.isfile(args.output_file):

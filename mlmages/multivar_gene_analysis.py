@@ -219,8 +219,6 @@ def main():
         trait_files[trait] = parse_file_list(files)
     args.shrinkage_files = trait_files
 
-    args._description = parser.description
-
     disp_params(args, title="INPUT SETTINGS")
     if os.path.isfile(args.output_file):
         print("Warning: output_file already exists and will be overwritten!")
@@ -239,7 +237,6 @@ def main():
     multivar_gene_analysis(**vars(args))
 
     
-
 if __name__ == "__main__":
 
     main()

@@ -1,1 +1,1 @@
-/users/xliu293/data/users/xliu293/ML-MAGES/revision/data/ld_r/ukb_chr22.qced.ld
+PATH_TO_LD/ukb_chr22.qced.ld

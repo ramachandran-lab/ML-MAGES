@@ -1,0 +1,9 @@
+data/ld_blocks/chr22_block0.ld
+data/ld_blocks/chr22_block1.ld
+data/ld_blocks/chr22_block2.ld
+data/ld_blocks/chr22_block3.ld
+data/ld_blocks/chr22_block4.ld
+data/ld_blocks/chr22_block5.ld
+data/ld_blocks/chr22_block6.ld
+data/ld_blocks/chr22_block7.ld
+data/ld_blocks/chr22_block8.ld

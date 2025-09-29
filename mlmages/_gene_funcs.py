@@ -10,8 +10,6 @@ except:
     CHISCORE_SUCCESS = False
     pass
 
-# from numpy import asarray, maximum, sqrt, sum
-# from scipy.stats import ncx2
 
 """
 Adapted from the original code of liu_sf() from the Python package chiscore (https://github.com/limix/chiscore).
@@ -175,7 +173,6 @@ def check_specific_trivar(sigma_eiginfo, rad_thre=np.pi/12, eigval_times_thre=5)
     cls_specific = []
 
     for eigvals, eigvecs, angs in sigma_eiginfo:
-        # --- Single-axis check (A,B,C) ---
         is_specific = [False, False, False]
 
         if np.all([eigvals[0] / e > eigval_times_thre for e in eigvals[1:]]):
@@ -184,7 +181,6 @@ def check_specific_trivar(sigma_eiginfo, rad_thre=np.pi/12, eigval_times_thre=5)
                 if ang_to_axis < rad_thre or ang_to_axis > (2 * np.pi - rad_thre):
                     is_specific[i_axis] = True
 
-        # --- Project eigenvalues onto xyz axes ---
         proj_on_xyz = []
         for i_axis in range(3):
             proj_on_xyz.append([])
@@ -196,12 +192,10 @@ def check_specific_trivar(sigma_eiginfo, rad_thre=np.pi/12, eigval_times_thre=5)
         # max projection along each axis
         max_on_xyz = np.max(proj_on_xyz, axis=1)
 
-        # --- Pairwise checks (AB, AC, BC) ---
         is_AB = max_on_xyz[0]/max_on_xyz[2] > eigval_times_thre and max_on_xyz[1]/max_on_xyz[2] > eigval_times_thre
         is_AC = max_on_xyz[0]/max_on_xyz[1] > eigval_times_thre and max_on_xyz[2]/max_on_xyz[1] > eigval_times_thre
         is_BC = max_on_xyz[1]/max_on_xyz[0] > eigval_times_thre and max_on_xyz[2]/max_on_xyz[0] > eigval_times_thre
 
-        # --- Triple check (ABC) ---
         is_ABC = True
         for i in range(3):
             for j in range(i+1, 3):
