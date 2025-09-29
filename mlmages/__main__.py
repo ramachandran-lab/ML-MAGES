@@ -16,8 +16,6 @@ from ._util_funcs import disp_params, parse_file_list, binary_combinations, str2
 from ._plot_funcs import plot_inf_cls, plot_data_cls, plot_inf_cls_bivar, plot_data_cls_bivar, plot_data_cls_trivar, plot_inf_cls_trivar, plot_effects, plot_pvals
 
 
-
-
 def main(args):
     
 
