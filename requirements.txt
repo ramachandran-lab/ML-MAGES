@@ -7,3 +7,4 @@ scipy==1.16.2
 seaborn==0.13.2
 statsmodels==0.14.0
 torch==2.8.0
+pandas_plink==2.2.9
