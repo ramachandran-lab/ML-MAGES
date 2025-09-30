@@ -138,4 +138,4 @@ In addition, we provide a full list of example scripts and code used for each st
   * view_results_example_code/view_enet_ex_results.py (can also be easily adapted to view ML-MAGES results)
 
 ## Data Availability
-Example data are provided in this GitHub repository. See Zenodo for summary-level data and simulation data used in this project.
+Example data are provided in this GitHub repository. See [Zenodo](https://zenodo.org/records/17215975) for the summary-level data and simulation data used in this project.
