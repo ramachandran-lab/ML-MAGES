@@ -37,39 +37,39 @@ This isolates the tool's dependencies from system-wide Python installations, avo
 
 ## Usage
 To run the full *ML-MAGES* pipeline, use the main module ``mlmages``. See the helper message by running ``python -m mlmages -h``.
-    ```
-    usage: __main__.py [-h] --chroms CHROMS [CHROMS ...] --gwas_files GWAS_FILES [GWAS_FILES ...]
-                   [--model_files MODEL_FILES [MODEL_FILES ...]] --full_ld_files FULL_LD_FILES
-                   [FULL_LD_FILES ...] --gene_file GENE_FILE --trait_names TRAIT_NAMES [TRAIT_NAMES ...]
-                   [--split_ld [SPLIT_LD]] [--ldblock_dir LDBLOCK_DIR] [--avg_block_size AVG_BLOCK_SIZE]
-                   [--vis [VIS]] [--output_dir OUTPUT_DIR]
+````
+usage: __main__.py [-h] --chroms CHROMS [CHROMS ...] --gwas_files GWAS_FILES [GWAS_FILES ...]
+               [--model_files MODEL_FILES [MODEL_FILES ...]] --full_ld_files FULL_LD_FILES
+               [FULL_LD_FILES ...] --gene_file GENE_FILE --trait_names TRAIT_NAMES [TRAIT_NAMES ...]
+               [--split_ld [SPLIT_LD]] [--ldblock_dir LDBLOCK_DIR] [--avg_block_size AVG_BLOCK_SIZE]
+               [--vis [VIS]] [--output_dir OUTPUT_DIR]
 
-  Master pipeline for ML-MAGES: (LD block extraction), shrinkage, clustering, and enrichment
-  
-  optional arguments:
-    -h, --help            show this help message and exit
-    --chroms CHROMS [CHROMS ...]
-                          Chromosome numbers
-    --gwas_files GWAS_FILES [GWAS_FILES ...]
-                          GWAS files, one per trait
-    --model_files MODEL_FILES [MODEL_FILES ...]
-                          Model files for shrinkage
-    --full_ld_files FULL_LD_FILES [FULL_LD_FILES ...]
-                          Full LD files for splitting into blocks and enrichment tests
-    --gene_file GENE_FILE
-                          Gene file for enrichment and gene-level analysis
-    --trait_names TRAIT_NAMES [TRAIT_NAMES ...]
-                          Trait names (same order as gwas_files)
-    --split_ld [SPLIT_LD]
-                          Whether to split LD files by chromosome
-    --ldblock_dir LDBLOCK_DIR
-                          Path to store LD block files
-    --avg_block_size AVG_BLOCK_SIZE
-                          Average block size for LD block extraction
-    --vis [VIS]           Whether to generate visualizations
-    --output_dir OUTPUT_DIR
-                          Output directory
-    ```
+Master pipeline for ML-MAGES: (LD block extraction), shrinkage, clustering, and enrichment
+
+optional arguments:
+-h, --help            show this help message and exit
+--chroms CHROMS [CHROMS ...]
+                      Chromosome numbers
+--gwas_files GWAS_FILES [GWAS_FILES ...]
+                      GWAS files, one per trait
+--model_files MODEL_FILES [MODEL_FILES ...]
+                      Model files for shrinkage
+--full_ld_files FULL_LD_FILES [FULL_LD_FILES ...]
+                      Full LD files for splitting into blocks and enrichment tests
+--gene_file GENE_FILE
+                      Gene file for enrichment and gene-level analysis
+--trait_names TRAIT_NAMES [TRAIT_NAMES ...]
+                      Trait names (same order as gwas_files)
+--split_ld [SPLIT_LD]
+                      Whether to split LD files by chromosome
+--ldblock_dir LDBLOCK_DIR
+                      Path to store LD block files
+--avg_block_size AVG_BLOCK_SIZE
+                      Average block size for LD block extraction
+--vis [VIS]           Whether to generate visualizations
+--output_dir OUTPUT_DIR
+                      Output directory
+````
 
 ## Examples
 For the following examples, all required data are provided. Check out the data repo for the full LD file.
