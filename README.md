@@ -71,6 +71,11 @@ optional arguments:
                       Output directory
 ````
 
+Note:
+1. The number of variants in the GWA summary files need to match that provided in the LD files. The specified chromosome(s) need to match those in the GWA and LD files.
+2. GWA summary files (provided through ``--gwas_files``) need to contain the following columns: 'CHR' for chromosome number (can be either 'CHR', 'CHROM', or 'CHROMOSOME'), 'BETA' for effect sizes (can be either 'BETA', 'EFFECT', 'B', 'LOG_ODDS', or 'OR'), 'SE' for standard errors (can be either 'SE', 'STDERR', 'STD_ERR', or 'STANDARD_ERROR'). 
+3. Gene file (provided through ``--gene_file``) needs to contain the following columns: 'CHR' for chromosome number, 'GENE' for gene symbol or gene name, 'N_SNPS' for number of variants considered in the gene, 'start_idx_chr' for the index (0-based) of the first variant in the gene in the chromosome relative to this chromosome, and 'chr_start_idx_gw' for the index (0-based) of the starting variant in the current chromosome relative to all genome-wide variants. The last two columns are used to map genes to variants. 
+
 ## Examples
 For the following examples, all required data are provided. Check out the data repo for the full LD file.
 
