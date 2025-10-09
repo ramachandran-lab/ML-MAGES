@@ -120,6 +120,110 @@ This example illustrates how to use the  ``mlmages.shrink_by_enet`` submodule to
 
 Change the submodule to ``mlmages.shrink_by_mlmages`` if applying the ML-MAGES shrinkage and provide ``--model_files`` argument appropriately (see "Example 1").
 
+## Submodule Usage
+We provide of the three steps in our *ML-MAGES* framework, effect size shrinkage, association clustering, and  gene-level analysis, each as a submodule that is excutable separately by providing appropriate arguments (see the corresponding helper message).
+**``mlmages.shrink_by_mlmages``**
+````
+RUNNING: shrink_by_mlmages
+usage: shrink_by_mlmages.py [-h] [--gwas_file GWAS_FILE]
+                            [--ld_files LD_FILES [LD_FILES ...]]
+                            [--model_files MODEL_FILES [MODEL_FILES ...]]
+                            [--output_file OUTPUT_FILE]
+                            [--chroms [CHROMS ...]]
+
+Apply trained ML-MAGES models to shrink GWA effects
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --gwas_file GWAS_FILE
+                        GWAS file
+  --ld_files LD_FILES [LD_FILES ...]
+                        List of LD block files (in order), or a file
+                        containing one filename per line
+  --model_files MODEL_FILES [MODEL_FILES ...]
+                        List of model files (in order), or a file containing
+                        one filename per line
+  --output_file OUTPUT_FILE
+                        Output file name to save shrinkage results
+  --chroms [CHROMS ...]
+                        Chromosome numbers (0–22). If not provided, all
+                        chromosomes will be used.
+````
+
+**``mlmages.cluster_shrinkage``**
+````
+RUNNING: cluster_shrinkage
+usage: cluster_shrinkage.py [-h] [--output_file OUTPUT_FILE] [--K K]
+                            [--n_runs N_RUNS] [--max_nz MAX_NZ]
+
+Use infinite mixture to cluster effects
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_file OUTPUT_FILE
+                        Output file name (prefix) to save clustering results
+  --K K                 Default K in the infinite mixture
+  --n_runs N_RUNS       Number of runs of the infinite mixture
+  --max_nz MAX_NZ       Maximum number of non-zero effects allowed (default:
+                        n/5 if n>15000 else n/3); if negative, allowing all
+                        SNPs
+```` 
+**``mlmages.univar_enrich``**
+````
+usage: univar_enrich.py [-h] [--output_file OUTPUT_FILE]
+                        [--gene_file GENE_FILE]
+                        [--shrinkage_file SHRINKAGE_FILE]
+                        [--clustering_file_prefix CLUSTERING_FILE_PREFIX]
+                        [--ld_files LD_FILES [LD_FILES ...]]
+                        [--chroms [CHROMS ...]]
+
+Enrichment test for single trait
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_file OUTPUT_FILE
+                        Output file name to save test results
+  --gene_file GENE_FILE
+                        Gene file
+  --shrinkage_file SHRINKAGE_FILE
+                        Trait's regularized effects file
+  --clustering_file_prefix CLUSTERING_FILE_PREFIX
+                        Clustering file prefix
+  --ld_files LD_FILES [LD_FILES ...]
+                        List of LD files (in order) of a trait, or a file
+                        containing one filename per line. Each file contains
+                        an LD matrix.
+  --chroms [CHROMS ...]
+                        Chromosome numbers (0–22). If not provided, all
+                        chromosomes will be used.
+````
+**``mlmages.multivar_gene_analysis``**
+````
+usage: multivar_gene_analysis.py [-h] [--output_file OUTPUT_FILE]
+                                 [--gene_file GENE_FILE]
+                                 [--clustering_file_prefix CLUSTERING_FILE_PREFIX]
+                                 [--chroms [CHROMS ...]]
+                                 [--prioritized_cls_prop PRIORITIZED_CLS_PROP]
+
+Gene-level analysis for multiple traits
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_file OUTPUT_FILE
+                        Output file name (prefix) to save clustering results
+  --gene_file GENE_FILE
+                        Gene file
+  --clustering_file_prefix CLUSTERING_FILE_PREFIX
+                        Clustering file prefix
+  --chroms [CHROMS ...]
+                        Chromosome numbers (0–22). If not provided, all
+                        chromosomes will be used.
+  --prioritized_cls_prop PRIORITIZED_CLS_PROP
+                        Proportion of variants to be considered in prioritized
+                        clusters (default 1, i.e., all non-zero variants)
+````
+
+
 ## Other Scripts 
 In addition, we provide a full list of example scripts and code used for each step in our analysis, including
 * Data preparation:
