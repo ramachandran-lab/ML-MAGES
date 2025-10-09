@@ -1,7 +1,7 @@
 # ML-MAGES
 Last Updated: 9/29/2025
 
-This folder contains example data and code for __*ML-MAGES*: A machine learning framework for multivariate genetic association analyses with genes and effect size shrinkage__
+This repository provides the *Supplemental Code* files for the manuscript __ML-MAGES Enables Multivariate Genetic Association Analyses with Genes and Effect Size Shrinkage__. It contains example data and scripts for running the method ***ML-MAGES***.
 
 
 ## Requirements  
@@ -74,7 +74,7 @@ optional arguments:
 ## Examples
 For the following examples, all required data are provided. Check out the data repo for the full LD file.
 
-**Example 1: run on a single chromosome** 
+### Example 1: run on a single chromosome
 ```bash
 bash scripts/run_ex1.sh
 ```
@@ -93,7 +93,7 @@ python -m mlmages \
 --output_dir output
 ```
 
-**Example 2: run on multiple chromosomes** 
+### Example 2: run on multiple chromosomes
 ```bash
 bash scripts/run_ex2.sh
 ```
@@ -112,7 +112,7 @@ python -m mlmages  \
 --output_dir ../output
 ```
 
-**Example using ENet for shrinkage (also an example running the workflow step-by-step)** 
+### Example using ENet for shrinkage (also an example running the workflow step-by-step)
 ```bash
 bash scripts/run_enet_ex.sh
 ```
@@ -121,7 +121,8 @@ This example illustrates how to use the  ``mlmages.shrink_by_enet`` submodule to
 Change the submodule to ``mlmages.shrink_by_mlmages`` if applying the ML-MAGES shrinkage and provide ``--model_files`` argument appropriately (see "Example 1").
 
 ## Submodule Usage
-We provide of the three steps in our *ML-MAGES* framework, effect size shrinkage, association clustering, and  gene-level analysis, each as a submodule that is excutable separately by providing appropriate arguments (see the corresponding helper message).
+We provide of the three steps in our *ML-MAGES* framework, effect size shrinkage, association clustering, and  gene-level analysis, each as a submodule that is excutable separately by providing appropriate arguments (see the corresponding helper message). Usage of all of these, except for ``mlmages.shrink_by_mlmages`` (which is replaced by ``mlmages.shrink_by_enet``) can be found in ["scripts/run_enet_ex.sh"](scripts/run_enet_ex.sh).
+
 **``mlmages.shrink_by_mlmages``**
 ````
 RUNNING: shrink_by_mlmages
@@ -242,4 +243,4 @@ In addition, we provide a full list of example scripts and code used for each st
   * view_results_example_code/view_enet_ex_results.py (can also be easily adapted to view ML-MAGES results)
 
 ## Data Availability
-Example data are provided in this GitHub repository. See [Zenodo](https://zenodo.org/records/17215975) for the summary-level data and simulation data used in this project.
+Example data are provided in this GitHub repository. See *Supplemental Data* on Zenodo (DOI: [10.5281/zenodo.17215974](https://doi.org/10.5281/zenodo.17215974)) for the summary-level data and simulation data used in this project.
