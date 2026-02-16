@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib import cm
+import seaborn as sns
 
 from .extract_ld_blocks import extract_ld_blocks
 from .shrink_by_mlmages import shrink_by_mlmages
@@ -210,9 +211,6 @@ def main(args):
                 fig.savefig(os.path.join(fig_path, "{}_inf_cls.png".format("-".join(traits))), dpi=150, bbox_inches='tight')
 
             # plot gene-level analysis
-            palette = cm.get_cmap("Accent",8)
-            palette = [palette(i) for i in range(8)]
-
             genelevel_prefix = genelevel_output
             n_traits = len(traits)
             genes_val_list = list()
@@ -227,6 +225,14 @@ def main(args):
                     genes_val_names.append("$\\beta_{}$$\\beta_{}$".format(i, j))
 
             fig, ax = plt.subplots(1,1, figsize=(9,3), dpi=150, sharex=True)
+            if len(genes_val_list)>20:
+                palette = list(sns.color_palette("husl", len(genes_val_list)))
+                rng = np.random.default_rng(123)  
+                rng.shuffle(palette)
+            elif len(genes_val_list)>8:
+                palette = sns.color_palette("tab20", len(genes_val_list))   
+            else:
+                palette = sns.color_palette("colorblind", len(genes_val_list))
             for i in range(len(genes_val_list)):
                 ax.scatter(np.arange(len(genes_val_list[i])), genes_val_list[i], color=palette[i], 
                         edgecolor='black', alpha=0.7, s=20, lw=0.1, label=genes_val_names[i])
@@ -239,6 +245,12 @@ def main(args):
             cls_frac = np.loadtxt("{}_genes_cls_frac.txt".format(genelevel_prefix), delimiter=',')
             fig, ax = plt.subplots(1,1, figsize=(9,3), dpi=150, sharex=True)
             bottom = np.zeros(cls_frac.shape[0])
+            if cls_frac.shape[1]<=8:
+                palette = sns.color_palette("colorblind", len(cls_frac))
+            else:
+                palette = list(sns.color_palette("husl", len(cls_frac)))
+                rng = np.random.default_rng(123)   
+                rng.shuffle(palette)
             for i in range(cls_frac.shape[1]):
                 ax.bar(np.arange(cls_frac.shape[0]), cls_frac[:,i], bottom=bottom, color=palette[i], edgecolor='black', lw=0.1, label="Cls."+str(i+1))
                 bottom += cls_frac[:,i]

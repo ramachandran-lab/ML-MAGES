@@ -1,5 +1,5 @@
 # ML-MAGES
-Last Updated: 9/29/2025
+Last Updated: 1/16/2026
 
 This repository provides the *Supplemental Code* files for the manuscript __ML-MAGES Enables Multivariate Genetic Association Analyses with Genes and Effect Size Shrinkage__. It contains example data and scripts for running the method ***ML-MAGES***.
 
@@ -15,12 +15,14 @@ All required packages are listed in [`requirements.txt`](requirements.txt). For 
 python -m venv ml-mages-env  # Create virtual environment
 source ml-mages-env/bin/activate  # Activate (Linux/Mac)
 pip install -r requirements.txt  # Install dependencies
+pip install -r requirements-optional.txt  # Install optional dependencies (chiscore)
 ```
 Alternatively, if using Conda,
 ```bash
-conda create -n ml-mages-env python=3.9
+conda create -n ml-mages-env python=3.11 # for optional dependencies, use python=3.9 instead
 conda activate ml-mages-env
 pip install -r requirements.txt  # Install dependencies
+pip install -r requirements-optional.txt  # Install optional dependencies (chiscore)
 ```
 This isolates the tool's dependencies from system-wide Python installations, avoiding potential dependency incompatibilities and version conflicts.  
 
@@ -30,10 +32,12 @@ This isolates the tool's dependencies from system-wide Python installations, avo
   ```bash
   git clone https://github.com/ramachandran-lab/ML-MAGES.git
   ```
-* The default working directory is assumed to be `ML-MAGES` to run the program ``mlmages``. However, you can switch to your preferred working directory, provided that you update all the file paths accordingly.
-* Pre-trained model are provided in [trained_models/](trained_models). 
-* Example data are provided in [data/](data). For space considerations, a full set of summary-level data and simulation data used in this project is provided in Zenodo.
-* Other files used in running the example (on small subset data) are provided in [example_files/](example_files)
+* By default, we assume your current working directory is the project root, `ML-MAGES`, when running `mlmages`. You may run it from any directory as long as you update the file paths accordingly.
+* Pre-trained models are provided in [`trained_models/`](trained_models).
+* Example data are provided in [`data/`](data). For space reasons, the full set of summary-level and simulation data used in this project is hosted on Zenodo.
+* Some large files are not stored on GitHub; please download them from Zenodo instead: [https://doi.org/10.5281/zenodo.17215974](https://doi.org/10.5281/zenodo.17215974).
+* Additional files needed to run the small-subset example are provided in [`example_files/`](example_files).
+
 
 ## Usage
 To run the full *ML-MAGES* pipeline, use the main module ``mlmages``. See the helper message by running ``python -m mlmages -h``.
@@ -76,8 +80,12 @@ Note:
 2. GWA summary files (provided through ``--gwas_files``) need to contain the following columns: 'CHR' for chromosome number (can be either 'CHR', 'CHROM', or 'CHROMOSOME'), 'BETA' for effect sizes (can be either 'BETA', 'EFFECT', 'B', 'LOG_ODDS', or 'OR'), 'SE' for standard errors (can be either 'SE', 'STDERR', 'STD_ERR', or 'STANDARD_ERROR'). 
 3. Gene file (provided through ``--gene_file``) needs to contain the following columns: 'CHR' for chromosome number, 'GENE' for gene symbol or gene name, 'N_SNPS' for number of variants considered in the gene, 'start_idx_chr' for the index (0-based) of the first variant in the gene in the chromosome relative to this chromosome, and 'chr_start_idx_gw' for the index (0-based) of the starting variant in the current chromosome relative to all genome-wide variants. The last two columns are used to map genes to variants. 
 
+Use the example files as references for the expected input file formats.
+
 ## Examples
-For the following examples, all required data are provided. Check out the data repo for the full LD file.
+For the examples below, all required data are provided except the full LD files, which are available from the [data repository](https://zenodo.org/records/17215975/files/ld.zip).
+
+Download the full LD files (see [`example_files/full_ld_files.txt`](example_files/full_ld_files.txt)) and place them in the expected location (`data/ld/`) before running these example scripts.
 
 ### Example 1: run on a single chromosome
 ```bash
@@ -123,7 +131,7 @@ bash scripts/run_enet_ex.sh
 ```
 This example illustrates how to use the  ``mlmages.shrink_by_enet`` submodule to perform shrinkage using elastic net (benchmark method).
 
-Change the submodule to ``mlmages.shrink_by_mlmages`` if applying the ML-MAGES shrinkage and provide ``--model_files`` argument appropriately (see "Example 1").
+**Change the submodule to ``mlmages.shrink_by_mlmages`` if applying the ML-MAGES shrinkage** and provide ``--model_files`` argument appropriately (see "Example 1").
 
 ## Submodule Usage
 We provide of the three steps in our *ML-MAGES* framework, effect size shrinkage, association clustering, and  gene-level analysis, each as a submodule that is excutable separately by providing appropriate arguments (see the corresponding helper message). Usage of all of these, except for ``mlmages.shrink_by_mlmages`` (which is replaced by ``mlmages.shrink_by_enet``) can be found in ["scripts/run_enet_ex.sh"](scripts/run_enet_ex.sh).
@@ -245,7 +253,14 @@ In addition, we provide a full list of example scripts and code used for each st
 * View results and performance:
   * (Visualization of ML-MAGES results was embedded in the main example.)
   * view_results_example_code/view_sim_results.py
-  * view_results_example_code/view_enet_ex_results.py (can also be easily adapted to view ML-MAGES results)
+  * view_results_example_code/view_enet_ex_results.py (can also be easily adapted to view ML-MAGES results) (e.g., by running ``python view_results_example_code/view_enet_ex_results.py``)
 
 ## Data Availability
 Example data are provided in this GitHub repository. See *Supplemental Data* on Zenodo (DOI: [10.5281/zenodo.17215974](https://doi.org/10.5281/zenodo.17215974)) for the summary-level data and simulation data used in this project.
+
+
+## Update Log
+**2026-01-16**
+* Updated installation instructions; moved `chiscore` to optional dependencies.
+* Fixed a color palette issue when too few distinct colors were generated.
+* Updated the README with a reminder to download and place the full LD files from Zenodo before running the examples.

@@ -1,4 +1,6 @@
-plink_file=/oscar/data/sramacha/users/xliu293/new_ukb_gwas/data/qc/ukb_chr22.qced.bed
+base_dir="/path/to/project"
+data_dir="${base_dir}/data"
+plink_file="${data_dir}/qc/ukb_chr22.qced.bed"
 
 python -m mlmages.simulate_snp_only \
 --plink_file $plink_file \

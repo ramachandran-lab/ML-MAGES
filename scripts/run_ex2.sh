@@ -8,4 +8,4 @@ python -m mlmages  \
 --split_ld True \
 --ldblock_dir data/ld_blocks/ \
 --avg_block_size 1000 \
---output_dir ../output
+--output_dir output

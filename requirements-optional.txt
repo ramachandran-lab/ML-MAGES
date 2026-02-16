@@ -1,0 +1,2 @@
+chiscore>=0.2.3           # depends on chi2comb + numpy + scipy 
+chi2comb>=0.1.0           # explicit (also pulled by chiscore) 

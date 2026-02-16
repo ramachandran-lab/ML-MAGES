@@ -167,6 +167,37 @@ def scale_true_beta(true_betas:np.ndarray, obs_betas:np.ndarray, scaled_obs_beta
     return scaled_true_betas.squeeze()    
 
 
+def angle_between(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> float:
+    """
+    Angle between vectors u and v.
+
+    - If u and v are 2D, returns the ORIENTED angle from v to u in radians, in (-pi, pi].
+      (You can map to [0, 2pi) outside, as your code already does.)
+    - If u and v are not 2D, returns the UNSIGNED angle in [0, pi].
+
+    Raises:
+        ValueError if either vector has (near-)zero norm.
+    """
+    u = np.asarray(u, dtype=float).ravel()
+    v = np.asarray(v, dtype=float).ravel()
+
+    nu = np.linalg.norm(u)
+    nv = np.linalg.norm(v)
+    if nu < eps or nv < eps:
+        raise ValueError(f"angle_between: zero-norm vector (nu={nu}, nv={nv}).")
+
+    if u.size == 2 and v.size == 2:
+        # oriented angle: atan2(cross, dot)
+        dot = float(u @ v)
+        cross = float(u[0] * v[1] - u[1] * v[0])
+        return float(np.arctan2(cross, dot))  # (-pi, pi]
+    else:
+        # unsigned angle via arccos of clipped cosine
+        cosang = float((u @ v) / (nu * nv))
+        cosang = float(np.clip(cosang, -1.0, 1.0))
+        return float(np.arccos(cosang))       # [0, pi]
+    
+    
 def get_eiginfo(Sigma: list[np.ndarray], comp_to_ref: bool=False):
     assert len(Sigma)>0
     if not comp_to_ref:
@@ -258,3 +289,21 @@ def compute_mean_prec(y_true:np.ndarray, y_pred:np.ndarray, base_rec:np.ndarray)
     precs = np.array(precs)
     mean_precs = precs.mean(axis=0)
     return mean_precs
+
+
+def check_finite(name, x, max_abs=None):
+    x = np.asarray(x)
+    if not np.all(np.isfinite(x)):
+        bad = np.argwhere(~np.isfinite(x))
+        i0 = tuple(bad[0])
+        raise FloatingPointError(
+            f"{name} has non-finite values. "
+            f"example idx={i0}, value={x[i0]}, total_bad={bad.shape[0]}, shape={x.shape}"
+        )
+    if max_abs is not None:
+        m = np.max(np.abs(x))
+        if m > max_abs:
+            raise FloatingPointError(
+                f"{name} too large: max|x|={m:.3g} > {max_abs}. shape={x.shape}"
+            )
+    return x  # convenient for inline use

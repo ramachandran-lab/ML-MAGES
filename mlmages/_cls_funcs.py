@@ -2,9 +2,11 @@ import numpy as np
 import scipy as sp
 import pandas as pd
 from scipy.stats import multivariate_normal
+from scipy.special import logsumexp
 from collections import Counter
 import time
 from typing import Tuple
+from ._util_funcs import check_finite
 
 
 def exp_log_Wishart(nu: float, L: np.ndarray) -> float:
@@ -20,7 +22,7 @@ def exp_log_Wishart(nu: float, L: np.ndarray) -> float:
     """
     p = L.shape[0]
     (sign, logabsdet) = np.linalg.slogdet(L)
-    assert sign>= 0
+    assert sign>= 0  
     if p > 1:
         return np.sum([sp.special.psi((nu + 1 - i) / 2) for i in range(1, p + 1)]) + p * np.log(2) + logabsdet
     else:
@@ -136,7 +138,7 @@ def initialize_VEM(p: int, K: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, 
     return a, b, nu, L_final
 
 
-def run_VEM(X: np.ndarray, K: int=20, alpha: float=0.5, niter: int=100, epsilon: float=1e-2) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list]:
+def run_VEM(X: np.ndarray, K: int=20, alpha: float=0.5, niter: int=1000, epsilon: float=1e-3) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list]:
     """
     Run the Variational Expectation-Maximization (VEM) algorithm.
 
@@ -155,6 +157,7 @@ def run_VEM(X: np.ndarray, K: int=20, alpha: float=0.5, niter: int=100, epsilon:
     a, b, nu, L = initialize_VEM(p, K)
     X_outer = np.array([np.outer(X[i, :], X[i, :]) for i in range(N)])
     C1 = -p / 2 * np.log(2 * np.pi)
+    check_finite("C1", C1)
     
     parameters_track = []
     ELBO_track = []
@@ -176,9 +179,29 @@ def run_VEM(X: np.ndarray, K: int=20, alpha: float=0.5, niter: int=100, epsilon:
         C2_all = C2_all_logv + C2_all_log1minusv
         C3_all = 0.5 * np.array(E_log_A_ks) 
         C4_all = -0.5 * nu_TrxxL
+
+        check_finite("C2_all", C2_all)
+        check_finite("C3_all", C3_all)
+        check_finite("C4_all", C4_all)
         
-        rho = np.exp(((C1+C2_all+C3_all)[:, np.newaxis]+C4_all.T).T)
-        r = rho / (np.sum(rho, axis=1, keepdims=True)+1e-8)
+        # rho = np.exp(((C1+C2_all+C3_all)[:, np.newaxis]+C4_all.T).T)
+        # r = rho / (np.sum(rho, axis=1, keepdims=True)+1e-8)
+        log_rho = ((C1 + C2_all + C3_all)[:, None] + C4_all.T).T   # shape (N, K)
+        check_finite("log_rho", log_rho, max_abs=1e6)
+        # mx = np.max(log_rho)
+        # if mx > 700:
+        #     raise FloatingPointError(f"log_rho too large for exp: max={mx}")
+        # rho = np.exp(log_rho)
+        # r = rho / (np.sum(rho, axis=1, keepdims=True)+1e-8)
+        log_r = log_rho - logsumexp(log_rho, axis=1, keepdims=True)
+        r = np.exp(log_r)
+
+        # log_r = log_rho - logsumexp(log_rho, axis=1, keepdims=True)
+        # r = np.exp(log_r)   # rows sum to 1, stable
+        # eps = 1e-8
+        # lse = logsumexp(log_rho, axis=1, keepdims=True)              # log(sum(exp(log_rho)))
+        # log_denom = np.logaddexp(lse, np.log(eps))                   # log(exp(lse) + eps)
+        # r = np.exp(log_rho - log_denom)
         N_ks = np.sum(r, axis=0)
         
         a = a_0 + N_ks # update a
@@ -189,7 +212,12 @@ def run_VEM(X: np.ndarray, K: int=20, alpha: float=0.5, niter: int=100, epsilon:
         nu = nu_0 + N_ks # update nu
         rxxT_ks = np.tensordot(X_outer,r,axes=(0,0)) 
         for k in range(K): # update L
-            L[k] = np.linalg.inv(L_0_inv + rxxT_ks[:,:,k])
+            # L[k] = np.linalg.inv(L_0_inv + rxxT_ks[:,:,k])
+            A = L_0_inv + rxxT_ks[:, :, k]
+            A = 0.5 * (A + A.T)                 # enforce symmetry
+            A = A + 1e-8 * np.eye(p)            # jitter to ensure SPD
+            Lk = np.linalg.inv(A)
+            L[k] = 0.5 * (Lk + Lk.T)
         parameters_track.append((r, a, b, nu, L))
         
         # compute ELBO
@@ -282,7 +310,7 @@ def get_cls(X: np.ndarray, Sigma: np.ndarray, pi: np.ndarray, r: np.ndarray, min
     """
     # truncate pi to some K with sum(pi_k) large enough
     pi_cutpoint = np.cumsum(pi)
-    pred_K = np.where(pi_cutpoint>1-1e-3)[0][0]+1
+    pred_K = np.where(pi_cutpoint>1-1e-2)[0][0]+1
     if pred_K<min_K:
         pred_K = min_K
     truncate_Sigma = Sigma[:pred_K]

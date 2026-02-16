@@ -32,7 +32,12 @@ def cluster_shrinkage(shrinkage_files, output_file, K=20, n_runs=25, max_nz=0):
     else:
         max_nz = max_nz
         assert max_nz<beta_reg.shape[0], "max_nz should be less than the number of SNPs!"
-    cutoff = 1e-3 if beta_reg.shape[0]>50000 else 1e-4
+    if beta_reg.shape[0]>50000:
+        cutoff = 1e-3
+    elif beta_reg.shape[0]>10000:
+        cutoff = 1e-4
+    else:
+        cutoff = 1e-5
     betas_nz, zero_cutoff = adjust_zero_threshold(beta_reg, init_zero_cutoff=cutoff, any_zero=True, 
                                                   min_nz=1000, max_nz=max_nz, adjust_scale=2, max_iter=10)
     print("shape change: {} -> {}".format(beta_reg.shape,betas_nz.shape))

@@ -1,4 +1,6 @@
 output/*
+data/ld/*
+data/ld.zip
 data/ld_blocks/chr1*
 data/ld_blocks/chr20*
 data/ld_blocks/chr21*

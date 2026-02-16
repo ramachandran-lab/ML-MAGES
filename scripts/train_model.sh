@@ -1,6 +1,6 @@
-module load python/3.11.0s-ixrhc3q
-module load cuda
-source ~/pytorch.venv/bin/activate
+# module load python/3.11.0s-ixrhc3q
+# module load cuda
+# source ~/pytorch.venv/bin/activate
 
 python -m mlmages.train_model \
 --top_r 15 \
